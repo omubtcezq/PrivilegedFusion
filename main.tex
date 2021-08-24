@@ -267,7 +267,7 @@
 \begin{document}
 
 % paper title
-\title{Privileged Estimate Fusion With Additive Correlated Gaussian Keystreams}
+\title{Privileged Estimate Fusion With Correlated Gaussian Keystreams}
 
 \author{\IEEEauthorblockN{Marko Ristic}
 \IEEEauthorblockA{Autonomous Multisensor Systems Group (AMS),\\
@@ -326,17 +326,39 @@ The abstract goes here.
 
 \section{Introduction}
 \begin{itemize}
-  \item 
+  \item $3/4$ of a page including abstract. Can be relatively similar to previous privilege paper.
+  \item Role of estimation and increase in relevance of privacy and state secrecy.
+  \item Usual methods hide all information, sometimes we want some leakage that can be used for a specific task.
+  \item e.g. leakage of control inputs or leakage of information vector sums.
+  \item Idea of privilege, e.g. GPS, chaotic systems.
+  \item Interested in cryptographic quantisation, provided by previous paper which considers linear systems and uses the optimality of the Kalman filter. Doesn't consider the effect of dynaically adding more sensors and the fusion of their measurements. 
+  \item Contribution stated explicitly.
+  \item Use case of the scenario, perhaps something where measurements are rare so synchronisation isn't a problem, like weather sensors. Alternatively something relating to cars.
 \end{itemize}
 
 \subsection{Notation}
+\begin{itemize}
+  \item matrices, vectors.
+  \item pseudorandom distribution.
+  \item negligible fuction and covariance.
+\end{itemize}
 
 
 \section{Problem Statement}
+\begin{itemize}
+  \item Want to provide levels of privileged estimation where multiple sensors are present and required for practical estimation accuracy.
+  \item Want to gurantee two types of estimation privilege. The difference between estimation performance of unprivileged estimators (ones with no sensor keys) using all present sensors and privileged estimators using only measurements from sensors to which they have keys, should be bounded. Similarly, the difference in estimation performance of privileged estimators using only measurements from sensors to which they have keys and privileged estimators using measurements from all sensors (both ones to which they have keys and those to which they don't) should be bounded.
+  \item The idea being that fusing many additional sensors to which you do not hold keys cannot provide the estimation benefits achieved from aquiring another sensor key.
+  \item Will use the privileged estimation scheme definition from previous paper to cryptographically guarantee the bounds, but will consider measurements from all sensors at each timestep without loss of generality. We therefore consider linear systems only (equations, etc.).
+\end{itemize}
 
 
 \section{Privileged Fusion}
-
+\begin{itemize}
+  \item The idea is to use correlated additive pseudorandom Gaussian noise at each sensor, which can only be removed from measurements produced by a specific sensor by an estimator holding the key for that sensor.
+  \item To capture the correlation between measurements, we can consider the estimation problem of $n$ sensors as the stacked equation (stacked eq with modified $H$ and correlation matrix).
+  \item 
+\end{itemize}
 
 \section{Cryptographic Privilege}
 
