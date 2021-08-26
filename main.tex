@@ -339,6 +339,7 @@ The abstract goes here.
 \subsection{Notation}
 \begin{itemize}
   \item matrices, vectors.
+  \item positive definitness
   \item pseudorandom distribution.
   \item negligible fuction and covariance.
 \end{itemize}
@@ -358,6 +359,7 @@ The abstract goes here.
 \begin{itemize}
   \item A series of covariances such that the difference between the best possible estimation from a privileged estimator and an unprivileged one is bounded by the series for all $k$.
   \item Give equations and definitions for privilege from previous paper.
+  \item When giving the definition for a privileged estimation scheme, however, the Noise algorithm should be modified from the previous paper so that the Noise algorithm takes true measurements and returns both privileged and unprivileged ones (a generalised, as the previous case would simply return true measurements as the privileged ones). This now allows for an unprivielged estimator to have a potentially better estimate (but still bounded by how much better).
 \end{itemize}
 \subsection{Gaussian keystream}
 \begin{itemize}
@@ -385,21 +387,32 @@ The abstract goes here.
 % In this form we also make the assumption that the different sensors are synchronised, that is that $k$ is known and equal at each timestep.
 % All of the sensors (H) need to be the same (or do they just need to be unobservable when stacked?). This is for the n->inf case only
 % A privileged esitmator still fusing non-privileged measurements can do better than simply fusing the noised estimates. After all it knows a value correlated with the added noises, so it can remove this uncertainty. This is captured in the dependence equation.
+% Choosing Z and Y
+% Centralised generation of sensor noise, needs to then be given to sensors...
+% Need to modify setup and noise definitions so that a negative difference is allowed (adversary can be better but only by so much)
 
 \section{Cryptographic Privilege}
 \begin{itemize}
-  \item To provide the cryptographic privilege provided by the presented multisensor scheme, we will rely on the optimality of the linear Kalman filter to produce series of covariances that are the best achieveable (smallest possible) for a given estimator, and take the difference between estimators in question to bound their difference.
-  \item Similarly to the previous paper, the bounding series can be used in a cryptography sketch proof which shows that the existence of an estimator violating the bound would imply the existence of a better linear estimator than the Kalman filter, proved not to exist.
+  \item To prove the cryptographic privilege provided by the presented multisensor scheme, we will rely on the optimality of the linear Kalman filter to produce series' of covariances that are the best achieveable (smallest possible) for a given estimator, and take the difference between estimators in question to bound their difference and achieve cryptographic estimation privilege.
+  \item Similarly to the previous paper, the bounding series can be used in a cryptographic sketch proof which shows that the existence of an estimator violating the bound would imply the existence of a better linear estimator than the Kalman filter, known not to exist. This then guarantees the bound by contrapositive.
   \item We consider two types of unprivileged estimation which we want to bound, namely estimators holding no keys and estimators holding only a subset of keys.
 \end{itemize}
 
 \subsection{Unprivileged Adversaries}
 \begin{itemize}
-  \item 
+  \item If we assume an unprivileged estimator can access all $n$ sensors, then their stacked estimation model can be described by the appropriate equation at each timestep $k$. 
+  \item We can then write the combined Kalman predict and update equation as the equation with params from previous one.
+  \item Due to the KF preserving error covariance order, by setting $P_0=0$ we get a series of covariance such that no unprivileged estimator can estimate with error covariances less than or equal to the series (lower-bound).
+  \item Similarly we can do the same for an estimator to which we want to lower-bound the estimation difference with the unprivileged estimator. 
+  \item A privileged estimator of privilege $j$ (access to the first $j$ keys) and that can only access the first $j$ sensors, has the appropriate measurement equation. Similarly, setting the initial covariance to zero, gives the lower bound series on the best possible estimation error achievable by the privileged estimator using only the measurements form the sensors to which it holds keys.
+  \item Taking the difference of the two estimator bounding series' produces the difference series.
+  \item In the context of cryptographic privileged estimation scheme, the Setup and Noise algorithms are given accordingly. The optimality of the KF can then be used to achieve the security notion.
+  \item In the above, we assume the unprivileged estimator has access to all $n$ sensors, while the $j$ privilege estimator has access to only the first $j$ sensors. In the case when the unprivileged estimator has access to fewer sensors, or the privileged one to more, their difference in estimation can only increase, thus keeping the computed lower-bound a lower-bound and the cryptographic guarantee does not change (albeit the definitions of Setup and Noise will to capture the now avaiable sets of measurements).
 \end{itemize}
 
 \subsection{Privileged Adversaries}
 \begin{itemize}
+  \item We can use a similar approach to guarantee the largest benefit in estimation avaiable to an estimator of privilege $j$ (access to first $j$ keys) by fusing measurements from sensors to which they do not hold keys to get a better state estimate.
   \item 
 \end{itemize}
 
