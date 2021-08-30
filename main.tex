@@ -93,9 +93,9 @@ The abstract goes here.
   \item Usual methods hide all information, sometimes we want some leakage that can be used for a specific task.
   \item e.g. leakage of control inputs or leakage of information vector sums.
   \item Idea of privilege, e.g. GPS \cite{grovesPrinciplesGNSSInertial2015}, chaotic systems.
-  \item Interested in cryptographic quantisation, provided by the previous paper which considers linear systems and uses the optimality of the Kalman filter. Doesn't consider the effect of dynamically adding more sensors and the fusion of their measurements. 
+  \item Interested in cryptographic quantisation, provided by the previous paper which considers linear systems and uses the optimality of the Kalman filter. Doesn't consider the effect of multiple privilege providing sensors and effect of fusing of their measurements without keys to obtain better estimates. 
   \item Contribution stated explicitly.
-  \item Use case of the scenario, perhaps something where measurements are rare so synchronisation isn't a problem, like weather sensors. Alternatively, something relating to cars.
+  \item Use case of the scenario, perhaps something where measurements are infrequent so synchronisation isn't a problem, like weather sensors. Alternatively, something relating to privileged access to sensor features.
 \end{itemize}
 
 \subsection{Notation}
@@ -145,13 +145,6 @@ The abstract goes here.
   \item Intuitively, the correlation between added pseudorandom noise stops an unprivileged estimator from gaining too much information from fusing measurements, while the uncorrelation between them stops the using of one key available at a privileged estimator from being used to gain too much information from remaining measurements for which they do not hold a key.
 \end{itemize}
 
-% Remember to add:
-% In this form we also make the assumption that the different sensors are synchronised, that is that $k$ is known and equal at each timestep.
-% All of the sensors (H) need to be the same (or do they just need to be unobservable when stacked?). This is for the n->inf case only
-% A privileged estimator still fusing non-privileged measurements can do better than simply fusing the noised estimates. After all, it knows a value correlated with the added noises, so it can remove this uncertainty. This is captured in the dependence equation.
-% Choosing Z and Y
-% Centralised generation of sensor noise, needs to then be given to sensors...
-% Need to modify setup and noise definitions so that a negative difference is allowed (adversary can be better but only by so much)
 
 \section{Cryptographic Privilege}
 \begin{itemize}
@@ -187,12 +180,16 @@ The abstract goes here.
   \item In addition to showing how to derive the bounds to the benefits of using unprivileged measurements, we have simulated concrete scenarios to demonstrate the methods.
   \item We consider the following linear system, and linear measurement models for $5$ sensors. Correlated and uncorrelated noise covariances are given by $Y$ and $Z$.
   \item Implementation details.
-  \item 
+  \item First figure shows $4$ plots. Each plot shows the traces of estimate covariances for the unprivileged estimator holding no keys, a privileged estimator holding $1,2,3$ and $4$ keys, respectively (estimating only using the privileged measurements) and the difference between the privilege and unprivileged traces. The difference here is equal to the trace of the difference series given in the previous section (for each of the $4$ privielges).
+  \item The second figure will again show $4$ plots. Now, each plot will show the traces of estimate covariances for the privileged estimator holding $1,2,3$ and $4$ keys, respectively, estimating using only the privileged measurements and estimating with all measurements (fusing unprivileged ones as well). The difference between the two traces will be plotted as well, which will in the case be negative (as the difference here is negative definite) and again be equal to a difference series from the previous section.
 \end{itemize}
 
 
 \section{Conclusion}
-The conclusion goes here.
+\begin{itemize}
+  \item Concluding remarks.
+  \item Future work includes exploring key subsets that do not need to be sequential and decentralised methods for multi-key correlated noise generation.
+\end{itemize}
 
 % conference papers do not normally have an appendix
 
