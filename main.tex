@@ -93,7 +93,7 @@ The abstract goes here.
   \item Usual methods hide all information, sometimes we want some leakage that can be used for a specific task.
   \item e.g. leakage of control inputs or leakage of information vector sums.
   \item Idea of privilege, e.g. GPS \cite{grovesPrinciplesGNSSInertial2015}, chaotic systems.
-  \item Interested in cryptographic quantisation, provided by the previous paper which considers linear systems and uses the optimality of the Kalman filter. Doesn't consider the effect of multiple privilege providing sensors and effect of fusing of their measurements without keys to obtain better estimates. 
+  \item Interested in cryptographic quantisation, provided by the previous paper which considers linear systems and uses the optimality of the Kalman filter. Doesn't consider the effect of multiple privilege-providing sensors and the effect of fusing of their measurements without keys to obtain better estimates. 
   \item Contribution stated explicitly.
   \item Use case of the scenario, perhaps something where measurements are infrequent so synchronisation isn't a problem, like weather sensors. Alternatively, something relating to privileged access to sensor features.
 \end{itemize}
@@ -103,29 +103,59 @@ The abstract goes here.
   \item Matrices, vectors.
   \item Positive definitness.
   \item Pseudorandom distribution.
-  \item Negligible fuction and covariance.
+  \item Estimator in cryptographic sense.
+  \item Negligible fuction and negligible covariance.
 \end{itemize}
 
+% 
+% 8888888b.  8888888b.   .d88888b.  888888b.   
+% 888   Y88b 888   Y88b d88P" "Y88b 888  "88b  
+% 888    888 888    888 888     888 888  .88P  
+% 888   d88P 888   d88P 888     888 8888888K.  
+% 8888888P"  8888888P"  888     888 888  "Y88b 
+% 888        888 T88b   888     888 888    888 
+% 888        888  T88b  Y88b. .d88P 888   d88P 
+% 888        888   T88b  "Y88888P"  8888888P"  
+%                                              
+%                                              
+%                                              
+% 
 
-\section{Problem Statement}
+\section{Problem Formulation}
 \begin{itemize}
-  \item We are considering an environment where multiple sensors are present and required for the greatest estimation accuracy of the measured system.
+  \item We are considering an environment where multiple sensors are present and required for the greatest estimation accuracy of the system they are measuring.
   \item We want to provide multiple levels of privilege to estimators, such that estimators with a higher level of privilege can achieve better estimates given the same measurements.
-  \item We consider linear system and measurement models given by (usual equations), which will make proving relevant cryptographic privileges straight forward. Each sensor $i$ holds it's own secret key $sk_i$, which can be made available to an estimator of a suitable privilege.
-  \item 
-  \item As multiple sensors are involved, we also need to consider how fusing
-  \item Want to guarantee two types of estimation privilege. The difference between estimation performance of unprivileged estimators (ones with no sensor keys) using all present sensors and privileged estimators using only measurements from sensors to which they have keys, should be bounded. Similarly, the difference in estimation performance of privileged estimators using only measurements from sensors to which they have keys and privileged estimators using measurements from all sensors (both ones to which they have keys and those to which they don't) should be bounded.
-  \item The idea being that fusing many additional sensors to which you do not hold keys cannot provide the estimation benefits achieved from acquiring another sensor key.
-  \item Will use the privileged estimation scheme definition from the previous paper to cryptographically guarantee the bounds but will consider measurements from all sensors at each timestep without loss of generality. We, therefore, consider linear systems only (equations, etc.).
+  \item We consider linear system and measurement models, given by the usual equations, which will make proving relevant cryptographic privileges straightforward. Each sensor $i$ holds its own secret key $sk_i$, which can be made available to an estimator of a suitable privilege.
+  \item While we are interested in a cryptographic difference in estimation between estimators who do and do not hold sensor keys, respectively, the involvement of multiple sensors means that access to additional sensors and the fusing of measurements from sensors whose key is not known also need to be considered.
+  \item We want to provide a scheme for estimation privileges that guarantees two types of estimation differences.
+  \item Firstly, we want a lower bound on the difference between estimation performance of an estimator that holds no sensor keys (an unprivileged estimator) but has access to all measurements, and an estimator holding a subset of sensor keys (a privileged estimator) using only measurements from sensors to which they hold a key. This construction means the bound remains a lower-bound when the unprivileged estimator has access to fewer sensors or when the privileged estimator has access to more and exhaustively captures the benefits of knowing sensor keys.
+  \item Secondly, we want an upper bound on the additional estimation performance a privileged estimator can achieve by fusing measurements from sensors to which they do not hold a key. The motivation behind this guarantee is that fusing additional measurements from sensors whose keys are not known should not provide as much estimation benefit as acquiring another sensor key, thus preserving the order of possible estimation performance across privileges.
+  \item The construction of the resulting scheme should be such that two free parameters can be chosen to control the values of these two bounds, respectively.
 \end{itemize}
 
+% 
+% 8888888b.  8888888b.  8888888888 888      8888888 888b     d888 
+% 888   Y88b 888   Y88b 888        888        888   8888b   d8888 
+% 888    888 888    888 888        888        888   88888b.d88888 
+% 888   d88P 888   d88P 8888888    888        888   888Y88888P888 
+% 8888888P"  8888888P"  888        888        888   888 Y888P 888 
+% 888        888 T88b   888        888        888   888  Y8P  888 
+% 888        888  T88b  888        888        888   888   "   888 
+% 888        888   T88b 8888888888 88888888 8888888 888       888 
+%                                                                 
+%                                                                 
+%                                                                 
+% 
 
 \section{Preliminaries}
 \subsection{Cryptographic Estimation Privilege}
 \begin{itemize}
+  \item The formal definition of a privileged estimation scheme was introduced in (previous paper) and captures a reduction in estimation performance that can always be achieved for an estimator not knowing the scheme key compared to one knowing it and unmodified measurements.
+  \item We will use a slight generalisation of this definition to capture an arbitrary difference in estimation that can always be achieved between estimators knowing and not knowing the scheme key, respectively.
+  \item Give the definition of a privileged estimation scheme (Setup and Noise) but with modified Noise to allow the case that neither estimator has access to true measurements.
+  \item 
   \item A series of covariances such that the difference between the best possible estimation from a privileged estimator and an unprivileged one is bounded by the series for all $k$.
-  \item Give equations and definitions for privilege from the previous paper.
-  \item When defining a privileged estimation scheme, however, the Noise algorithm should be modified from the previous paper so that the Noise algorithm takes true measurements and returns both privileged and unprivileged ones (a generalised, as the previous case would simply return true measurements as the privileged ones). This now allows for an unprivileged estimator to have a potentially better estimate (but still bounded by how much better). Also, the matrices D in the definition itself no longer need to be valid covariances (since they can be 'negative').
+  \item This now allows for an unprivileged estimator to have a potentially better estimate (but still bounded by how much better). Also, the matrices D in the definition itself no longer need to be valid covariances (since they can be 'negative').
 \end{itemize}
 \subsection{Gaussian keystream}
 \begin{itemize}
@@ -184,7 +214,7 @@ The abstract goes here.
   \item In addition to showing how to derive the bounds to the benefits of using unprivileged measurements, we have simulated concrete scenarios to demonstrate the methods.
   \item We consider the following linear system, and linear measurement models for $5$ sensors. Correlated and uncorrelated noise covariances are given by $Y$ and $Z$.
   \item Implementation details.
-  \item First figure shows $4$ plots. Each plot shows the traces of estimate covariances for the unprivileged estimator holding no keys, a privileged estimator holding $1,2,3$ and $4$ keys, respectively (estimating only using the privileged measurements) and the difference between the privilege and unprivileged traces. The difference here is equal to the trace of the difference series given in the previous section (for each of the $4$ privielges).
+  \item First figure shows $4$ plots. Each plot shows the traces of estimator covariances for the unprivileged estimator holding no keys, a privileged estimator holding $1,2,3$ and $4$ keys, respectively (estimating only using the privileged measurements) and the difference between the privilege and unprivileged traces. The difference here is equal to the trace of the difference series given in the previous section (for each of the $4$ privileges).
   \item The second figure will again show $4$ plots. Now, each plot will show the traces of estimate covariances for the privileged estimator holding $1,2,3$ and $4$ keys, respectively, estimating using only the privileged measurements and estimating with all measurements (fusing unprivileged ones as well). The difference between the two traces will be plotted as well, which will in the case be negative (as the difference here is negative definite) and again be equal to a difference series from the previous section.
 \end{itemize}
 
