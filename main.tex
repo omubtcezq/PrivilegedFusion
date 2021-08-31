@@ -100,16 +100,20 @@ The abstract goes here.
 
 \subsection{Notation}
 \begin{itemize}
-  \item matrices, vectors.
-  \item positive definitness
-  \item pseudorandom distribution.
-  \item negligible fuction and covariance.
+  \item Matrices, vectors.
+  \item Positive definitness.
+  \item Pseudorandom distribution.
+  \item Negligible fuction and covariance.
 \end{itemize}
 
 
 \section{Problem Statement}
 \begin{itemize}
-  \item Want to provide levels of privileged estimation where multiple sensors are present and required for practical estimation accuracy.
+  \item We are considering an environment where multiple sensors are present and required for the greatest estimation accuracy of the measured system.
+  \item We want to provide multiple levels of privilege to estimators, such that estimators with a higher level of privilege can achieve better estimates given the same measurements.
+  \item We consider linear system and measurement models given by (usual equations), which will make proving relevant cryptographic privileges straight forward. Each sensor $i$ holds it's own secret key $sk_i$, which can be made available to an estimator of a suitable privilege.
+  \item 
+  \item As multiple sensors are involved, we also need to consider how fusing
   \item Want to guarantee two types of estimation privilege. The difference between estimation performance of unprivileged estimators (ones with no sensor keys) using all present sensors and privileged estimators using only measurements from sensors to which they have keys, should be bounded. Similarly, the difference in estimation performance of privileged estimators using only measurements from sensors to which they have keys and privileged estimators using measurements from all sensors (both ones to which they have keys and those to which they don't) should be bounded.
   \item The idea being that fusing many additional sensors to which you do not hold keys cannot provide the estimation benefits achieved from acquiring another sensor key.
   \item Will use the privileged estimation scheme definition from the previous paper to cryptographically guarantee the bounds but will consider measurements from all sensors at each timestep without loss of generality. We, therefore, consider linear systems only (equations, etc.).
