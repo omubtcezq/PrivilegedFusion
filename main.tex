@@ -148,14 +148,14 @@ The abstract goes here.
 
 \section{Preliminaries}\label{sec:prelim}
 \begin{itemize}
-  \item When defining our scheme and discussing it's cryptographic guarantees, we will make use of Gaussian keystreams and the notion of cryptographic estimation privilege. These have been summarised below.
+  \item When defining our scheme and discussing its cryptographic guarantees, we will make use of Gaussian keystreams and the notion of cryptographic estimation privilege. These have been summarised below.
 \end{itemize}
 \subsection{Gaussian keystreams}\label{subsec:gauss_keystreams}
 \begin{itemize}
-  \item A Gaussian keystream is a sequence of pseudorandom Gaussian samples generated using a random key. The sequence is indistinguishable from a trully random Gaussian sequence to any observer that does not hold the key, while it is exactly reproducible if they do hold the key.
-  \item A Gaussian keystream can be constructed from any cryptographic bitstream cipher, when making the floating-point randomness assumption.
+  \item A Gaussian keystream is a sequence of pseudorandom Gaussian samples generated using a random key. The sequence is indistinguishable from a truly random Gaussian sequence to any observer that does not hold the key, while it is exactly reproducible if they do hold the key.
+  \item A Gaussian keystream can be constructed from any cryptographic bitstream cipher when making the floating-point randomness assumption.
   \item Give the assumption about floating-point numbers and why they are reasonable to use in place of truly random real numbers in cryptography proofs.
-  \item Define the equations for turning a bitstream cipher into into a multivariate Gaussian stream with multivariate covariance denote $S$.
+  \item Define the equations for turning a bitstream cipher into a multivariate Gaussian stream with multivariate covariance denote $S$.
 \end{itemize}
 \subsection{Cryptographic Estimation Privilege}\label{subsec:crypto_privilege}
 \begin{itemize}
@@ -189,35 +189,33 @@ The abstract goes here.
 \begin{itemize}
   \item Before we introduce the means of modifying measurements with sensor keys to affect the estimation performance for different privileges, we must also define the considered privilege levels in terms of access to sensor keys.
   \item In this work, we will consider privileges as knowing sequential sensor keys, in order to make correlated noise generation simpler.
-  \item That is, in the presence of $n$ sensors, we will consider exactly $n$ possible privilege levels, where each privilege $j$ corresponds to holding the sequential sensors' secret keys $sk_1,...,sk_j$, while being unprivileged corresponds to holding no secret keys.
-  \item As is intuitive, each succesive privilege level, knowing exactly one additional sensor key, will correspond to better estimation results than the previous levels or the unprivileged case.
+  \item That is, in the presence of $n$ sensors, we will consider exactly $n$ possible privilege levels, where each privilege $j$ corresponds to holding the sequential sensors' secret keys $sk_1,...,sk_j$ while being unprivileged corresponds to holding no secret keys.
+  \item As is intuitive, each successive privilege level, knowing exactly one additional sensor key, will correspond to better estimation results than the previous levels or the unprivileged case.
 \end{itemize}
 \subsection{Noise Generation}\label{subsec:noise_gen}
 \begin{itemize}
   \item Similarly to the Gaussian keystream introduced earlier, pseudorandom standard normal samples can be correlated when transformed together even when generated using different keys.
   \item To capture a correlation between additive noises from each sensor, we introduce the fully correlated component $Z$ and the uncorrelated component $Y$ and given $n$ sensors we define the generated noise cross-correlation matrix as $S$ (give equation).
-  \item The generation of the additive nosies can then be computed with $m$ standard normal pseudorandom samples generated from keys of each sensor with the following equation (using $S^{1/2}$) and added to the measurements at every timestep $k$ as follows (give measurements equation with two noises).
-  \item In the equation above, computing $S^{1/2}$ requires more than the simpler requirement in single sensor pseudorandom Gaussian keystream ($S^{1/2}S^{1/2}=S)$), as the form of the matrix $S^{1/2}$ will affect which subsets of keys are sufficient for partially computing the correlated noises. That is, privileged estimators that only hold a subset of sensor keys should still be able to generate the correlated pseudorandom Gaussian keystream for the subset of sensors for which they hold keys, but not for the remaining sensors.
-  \item To achieve this, and support the privileges introduced in the previous subsection, a lower-triangular form of $S^{1/2}$ is required, for which we will use the Cholesky decomposition.
-  \item In this form, an estimator of privilege $j$ (holding keys $sk_1,...,sk_j$, $j\leq n$), can correctly  generate the noises for sensors $1,...,j$ by computing (give partial generation equation up to sensor $j$).
-  \item The subset of computed noises can then be removed from recieved sensor measurements
-  
-  \item Removing the added noise
-  
-  \item Using a cryptographically sound stream cipher in the generation of Gaussian samples above would mean that an estimator holding no keys 
-  \item Intuitively, the components $Z$ and $Y$ control the
-  \item 
-  
-  \item Computing this with an arbitrary $C^{1/2}$ however, would require an estimator to hold all $n$ keys to replicate the added noise locally before it can be removed. That is, each Gaussian in the resulting sensors noises vector $p_i$ may depend on standard Gaussians $z_i$ generated by all the other keys.
-  \item Instead, finding a $C^{1/2}$ such that each $p_i$ can be computed sequentially given only the keys $<i$ allows removing noises from some sensors depending on the keys that are held. It does however restrict the subsets of keys that can be used to remove noises to sequential keys $i$, and therefore also restricts the privileges that are available to estimators. In this case, there are $n$ possible privileges, each holding one more key than the last (and allowing better estimation).
-  \item We can now write the measurement equations for the measurements available at a privileged estimator holding a key subset $j$ as ($j$ non-noised measurement and $n-j$ noised ones - where the covariance is computed given the first $j$ variables).
-  \item This contrasts the measurements equations for the unprivileged estimator (holding no keys) given by (single block equation, all sensors - or as many as they have access to).
-
-  \item Intuitively, the correlation between added pseudorandom noise stops an unprivileged estimator from gaining too much information from fusing measurements, while the uncorrelation between them stops the using of one key available at a privileged estimator from being used to gain too much information from remaining measurements for which they do not hold a key.
+  \item The generation of the additive noise can then be computed with $m$ standard normal pseudorandom samples generated from keys of each sensor with the following equation (using $S^{1/2}$) and added to the measurements at every timestep $k$ as follows (give measurements equation with two noises).
+  \item In the equation above, computing $S^{1/2}$ requires more than the simpler requirement in single sensor pseudorandom Gaussian keystream ($S^{1/2}S^{1/2\top}=S)$), as the form of the matrix $S^{1/2}$ will affect which subsets of keys are sufficient for partially computing the correlated noises. That is, privileged estimators that only hold a subset of sensor keys should still be able to generate the correlated pseudorandom Gaussian keystream for the subset of sensors for which they hold keys, but not for the remaining sensors.
+  \item To achieve this and support the privileges introduced in the previous subsection, a lower-triangular form of $S^{1/2}$ is required, for which we will use the Cholesky decomposition. In this form, computing $S^{1/2}$ for a subset of sensors $1,...,j$, $j\leq n$ satisfies the following (equation showing that this matrix is the top left block matrix of the equivalent decomposition for all $n$ sensors).
+  \item Now, an estimator of privilege $j$ (that holds the keys $sk_1,...,sk_j$, $j\leq n$), can correctly generate the noises for sensors $1,...,j$ by computing (give partial generation equation up to sensor $j$).
+  \item The subset of computed noises can then be removed from received sensor measurements $z'_1,...,z'_j$ by subtracting it.
+  \item Since we are using a cryptographically sound stream cipher, pseudorandom Gaussian samples are indistinguishable from truly random ones to an estimator not holding any relevant keys. We can then consider three estimation problems.
+  \item First, an estimator with access to $j$ sensors and no keys (unprivileged estimator) will have measurements indistinguishable from those following the measurement model given by (model but with additional measurement noise $Y$ and $Z$).
+  \item Second, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ can remove all added pseudorandom noise from observable measurements and follows the measurement model given earlier exactly.
+  \item Lastly, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ as well as some additional $k$ remaining sensors. In this case, noises can be removed from the first $j$ measurements, while the remaining $k$ measurements have conditional Gaussian noise based on the first $j$ pseudorandom samples. This can be captured by the measurement equation (give slightly more complicated conditional measurement equation that will not have zero-mean noise).
+  \item Intuitively, and from the measurement models observed for the different estimators above, we can tell that the parameters $Z$ and $Y$ will control the difference in estimation performance between estimators.
+  \item More specifically, the fully correlated term $Z$ will control the difference in estimation between an unprivileged and privileged estimator, while the uncorrelated term $Y$ will control the difference in estimation between privileged estimators with and without access to additional measurements from sensors to which they do not hold keys.
+  \item These two differences correspond to the two guarantees we want to show for the presented scheme (introduced in the problem formulation section).
+  \item The effects of choosing these parameters will be formally exploring in the cryptography section.
 \end{itemize}
 \subsection{Noise Distribution}\label{subsec:noise_dist}
 \begin{itemize}
+  \item While we have described a method for generating noise for $n$ sensors such that different estimators observe different measurement models being followed, we have not discussed where noise is generated and how it distributed to the relevant sensors.
   \item 
+
+  \item Synchronisation should be mentioned here.
 \end{itemize}
 
 % 
