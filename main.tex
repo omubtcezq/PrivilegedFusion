@@ -125,6 +125,7 @@ The abstract goes here.
   \item We are considering an environment where multiple sensors are present and required for the greatest estimation accuracy of the system they are measuring.
   \item We want to provide multiple levels of privilege to estimators, such that estimators with a higher level of privilege can achieve better estimates given the same measurements.
   \item We consider linear system and measurement models, given by the usual equations, which will make proving relevant cryptographic privileges straightforward. Each sensor $i$ holds its own secret key $sk_i$, which can be made available to an estimator of a suitable privilege.
+  \item In addition to linear systems, we will make the assumption that the sensors are synchronised in time $k$ to simplify meaningful cryptographic evaluation when recieving measurements. In practice, this would restrict the estimation scheme to scenarios where measurements are taken infrequently and timestep synchronisation is easier to guarantee.
   \item While we are interested in a cryptographic difference in estimation between estimators who do and do not hold sensor keys, respectively, the involvement of multiple sensors means that access to additional sensors and the fusing of measurements from sensors whose key is not known also need to be considered.
   \item We want to provide a scheme for estimation privileges that guarantees two types of estimation differences.
   \item Firstly, we want a lower bound on the difference between estimation performance of an estimator that holds no sensor keys (an unprivileged estimator) but has access to all measurements, and an estimator holding a subset of sensor keys (a privileged estimator) using only measurements from sensors to which they hold a key. This construction means the bound remains a lower-bound when the unprivileged estimator has access to fewer sensors or when the privileged estimator has access to more and exhaustively captures the benefits of knowing sensor keys.
@@ -183,7 +184,7 @@ The abstract goes here.
 \section{Privileged Fusion}\label{sec:scheme}
 \begin{itemize}
   \item The idea behind the privileged fusion scheme is to add correlated Gaussian keystreams to measurements from each sensor, which can be removed by estimators holding the respective sensor secret keys.
-  \item To exactly capture the correlation between the modified measurements, we will consider the stacked measurement model when having access to $j$ sensors (stacked eq with modified $H^{(j)}$ and correlation matrix $C^{(j)}$, $j\leq n$).
+  \item As we assume that the sensors are synchronised, we can exactly capture the correlation between the modified measurements by considering the stacked measurement model when having access to $j$ sensors (stacked eq with modified $H^{(j)}$ and correlation matrix $C^{(j)}$, $j\leq n$).
 \end{itemize}
 \subsection{Privileges}\label{subsec:scheme_privileges}
 \begin{itemize}
@@ -204,7 +205,7 @@ The abstract goes here.
   \item Since we are using a cryptographically sound stream cipher, pseudorandom Gaussian samples are indistinguishable from truly random ones to an estimator not holding any relevant keys. We can then consider three estimation problems.
   \item First, an estimator with access to $j$ sensors and no keys (unprivileged estimator) will have measurements indistinguishable from those following the measurement model given by (model but with additional measurement noise $Y$ and $Z$).
   \item Second, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ can remove all added pseudorandom noise from observable measurements and follows the measurement model given earlier exactly.
-  \item Lastly, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ as well as some additional $k$ remaining sensors. In this case, noises can be removed from the first $j$ measurements, while the remaining $k$ measurements have conditional Gaussian noise based on the first $j$ pseudorandom samples. This can be captured by the measurement equation (give slightly more complicated conditional measurement equation that will not have zero-mean noise).
+  \item Lastly, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ as well as some additional $l$ remaining sensors. In this case, noises can be removed from the first $j$ measurements, while the remaining $l$ measurements have conditional Gaussian noise based on the first $j$ pseudorandom samples. This can be captured by the measurement equation (give slightly more complicated conditional measurement equation that will not have zero-mean noise).
   \item Intuitively, and from the measurement models observed for the different estimators above, we can tell that the parameters $Z$ and $Y$ will control the difference in estimation performance between estimators.
   \item More specifically, the fully correlated term $Z$ will control the difference in estimation between an unprivileged and privileged estimator, while the uncorrelated term $Y$ will control the difference in estimation between privileged estimators with and without access to additional measurements from sensors to which they do not hold keys.
   \item These two differences correspond to the two guarantees we want to show for the presented scheme (introduced in the problem formulation section).
@@ -213,9 +214,10 @@ The abstract goes here.
 \subsection{Noise Distribution}\label{subsec:noise_dist}
 \begin{itemize}
   \item While we have described a method for generating noise for $n$ sensors such that different estimators observe different measurement models being followed, we have not discussed where noise is generated and how it distributed to the relevant sensors.
-  \item 
-
-  \item Synchronisation should be mentioned here.
+  \item Due to the correlation between sensor noises in the method above, generation of one sensor's noise is dependant on generated noise from others. To handle this, they can be generated either centrally and distributed to sensors or sequentially by the sensors $1$ through $n$.
+  \item To compute them centrally, equation (generation of $n$ noises given before) is computed by a central processor and each noise $p_{i,k}$, $1\leq i \leq n$, is sent to sensor $i$ to add to their measurement at time $k$.
+  \item Sequentially, each sensor can generate its own noise $p_{i,k}$ based on the noises generated before it, that is, given $p_{j,k}$, $1\leq j<i$, the conditional Gaussian can be computed as (equation for generating sequential correlation). However, a downside of this method is the increasing size of data being sent to each sensor as the noise is generated and can result in later sensors requiring more processing power than may be available.
+  \item In both of the cases however, the computation of noises $p_{i,k}$ can be done offline and in advance, such that sensors have sufficient addative noises already computed prior to commencement of measurement.
 \end{itemize}
 
 % 
@@ -234,9 +236,10 @@ The abstract goes here.
 
 \section{Cryptographic Privilege}\label{sec:crypto}
 \begin{itemize}
-  \item To prove the cryptographic privilege provided by the presented multisensor scheme, we will rely on the optimality of the linear Kalman filter to produce series' of covariances that are the best achievable (smallest possible) for a given estimator, and take the difference between estimators in question to bound their difference and achieve cryptographic estimation privilege.
+  \item To give a sketch proof of the cryptographic privilege provided by the presented multisensor scheme, we first recall two important assumptions. We consider cryptographically generated random floating-point numbers to be sufficiently close to real numbers that real number proofs can be used, namely the optimality of the Kalman filter, and that all sensors are synchronised, such that noises $p_{i,k}$ are always added to measurements $z_{i,k}$ from each sensor and that the measurement stacked model (given a the start of the scheme section) is correct for all $k$.
+  \item The sketch proof will rely on the optimality of the linear Kalman filter to produce series' of covariances that are the best achievable (smallest possible) for a given estimator, and take the difference between estimators in question to bound their difference and achieve cryptographic estimation privilege.
   \item Similarly to the previous paper, the bounding series can be used in a cryptographic sketch proof which shows that the existence of an estimator violating the bound would imply the existence of a better linear estimator than the Kalman filter, known not to exist. This then guarantees the bound by contrapositive.
-  \item We consider two types of unprivileged estimation which we want to bound, namely estimators holding no keys and estimators holding only a subset of keys.
+  \item We consider two types of unprivileged estimation which we want to bound, namely estimators holding no keys and estimators holding only a subset of keys, as specified in the desired guarantees.
 \end{itemize}
 
 \subsection{Unprivileged Adversaries}\label{subsec:crypto_unprivileged}
@@ -248,16 +251,18 @@ The abstract goes here.
   \item A privileged estimator of privilege $j$ (access to the first $j$ keys) and that can only access the first $j$ sensors, has the appropriate measurement equation. Similarly, setting the initial covariance to zero gives the lower bound series on the best possible estimation error achievable by the privileged estimator using only the measurements from the sensors to which it holds keys.
   \item Taking the difference of the two estimator bounding series' produces the difference series.
   \item In the context of cryptographic privileged estimation scheme, the Setup and Noise algorithms are given accordingly. The optimality of the KF can then be used to achieve the security notion.
-  \item In the above, we assume the unprivileged estimator has access to all $n$ sensors, while the $j$ privilege estimator has access to only the first $j$ sensors. In the case when the unprivileged estimator has access to fewer sensors or the privileged one to more, their difference in estimation can only increase, thus keeping the computed lower-bound a lower-bound and the cryptographic guarantee does not change (albeit the definitions of Setup and Noise will to capture the now available sets of measurements).
+  \item In the above, we assume the unprivileged estimator has access to all $n$ sensors, while the $j$ privilege estimator has access to only the first $j$ sensors. In the case when the unprivileged estimator has access to fewer sensors or the privileged one to more, their difference in estimation can only increase, thus keeping the computed lower-bound a lower-bound and the cryptographic guarantee does not change (albeit the definitions of Setup and Noise will, to capture the now available sets of measurements).
 \end{itemize}
 
 \subsection{Privileged Adversaries}\label{subsec:crypto_privileged}
 \begin{itemize}
-  \item We can use a similar approach to guarantee the largest possible benefit in estimation available to an estimator of privilege $j$ (access to first $j$ keys) by fusing measurements from sensors to which they do not hold keys to get a better state estimate.
-  \item We can again write stacked estimation models for the two estimators and use the optimality of the KF to give their best possible performances as a series of covariances.
-  \item Taking the difference of the bounds now gives a bound on how much better an estimate can become when unprivileged measurements are fused to the privileged ones.
+  \item We can use a similar approach to seperately guarantee the largest possible benefit in estimation available to an estimator of privilege $j$ (access to first $j$ keys) when fusing measurements from sensors to which they do not hold keys to get a better state estimate.
+  \item We can again write stacked estimation models for the two estimators. The estimator of privilege $j$ with access to the first $j$ measuremets still follows the model (given in previous subsection).
+  \item The estimator with access to the additional $l$ measurements, however, does not have zero-mean measurement noise as seen in (equation for the addional measurements estmiator given before) required for the Kalman filter. As the mean is known at each $k$, from the known noises $p_{i,k}$, $1\leq i \leq j$, remaining measurements can be offset to produce the equivalent measurement model with zero-mean noise (given here).
+  \item Again, using the combined predict and update equations of the KF and setting $P_0=0$, we can use the optimality of the KF to give the best possible performances of the estimators as a series of covariances.
+  \item Taking the difference of the bounds now gives a bound on how much better an estimate can become when unprivileged measurements are fused with privileged ones.
   \item In the context of a cryptographic privileged estimation scheme, the Setup and Noise algorithms can be given as follows. KF optimality can then be used to achieve the security notion.
-  \item We note that unlike in the unprivileged adversary case, or the previous paper, here we do not use unmodified measurements for the privileged estimates and the resulting algorithms provide better estimation for the adversary than the privileged estimator. In this form, we show bound how much better an adversary can estimate when using unprivileged estimates resulting in series $D_k$ consisting of negative-definite rather than positive definite matrices.
+  \item We note that unlike in the unprivileged adversary case, or the previous paper, here we do not use unmodified measurements for the privileged estimates and the resulting algorithms provide better estimation for the adversary than the privileged estimator. In this form, we bound how much better an adversary can estimate when using unprivileged estimates resulting in series $D_k$ consisting of negative-definite rather than positive definite matrices. This makes use of the generalised cryptographic definitions earlier.
 \end{itemize}
 
 % 
@@ -277,10 +282,10 @@ The abstract goes here.
 \section{Simulation}\label{sec:sim}
 \begin{itemize}
   \item In addition to showing how to derive the bounds to the benefits of using unprivileged measurements, we have simulated concrete scenarios to demonstrate the methods.
-  \item We consider the following linear system, and linear measurement models for $5$ sensors. Correlated and uncorrelated noise covariances are given by $Y$ and $Z$.
+  \item We consider the following linear system, and linear measurement models for $4$ sensors. Correlated and uncorrelated noise covariances are of the form $Y=\sigma_y I$ and $Z = \sigma_z I$.
   \item Implementation details.
-  \item First figure shows $4$ plots. Each plot shows the traces of estimator covariances for the unprivileged estimator holding no keys, a privileged estimator holding $1,2,3$ and $4$ keys, respectively (estimating only using the privileged measurements) and the difference between the privilege and unprivileged traces. The difference here is equal to the trace of the difference series given in the previous section (for each of the $4$ privileges).
-  \item The second figure will again show $4$ plots. Now, each plot will show the traces of estimate covariances for the privileged estimator holding $1,2,3$ and $4$ keys, respectively, estimating using only the privileged measurements and estimating with all measurements (fusing unprivileged ones as well). The difference between the two traces will be plotted as well, which will in the case be negative (as the difference here is negative definite) and again be equal to a difference series from the previous section.
+  \item First figure shows $4$ plots. Each plot shows three traces. The traces are: the trace of the unprivileged estimator (no keys, all measurements), the trace of a privilege $j$ estimator ($j$ measurements) and the trace of a fusing privilege $j$ estimators (all measurements). $j$ is equal to $1,2,3$ and $4$ for each plot, respectively. Here, the difference between the first two traces in figure $4$ and the second two traces in figure $1$ are equal to the traces of the two $D_k$ series from the cryptography section, respectively. Values for $\sigma_y$, $\sigma_z$ are fixed.
+  \item The second figure focuses on a single plot from the first figure but varies $\sigma_y$ and $\sigma_z$. Again, $4$ plots are shown, with $\sigma_y$ increased in two and $\sigma_z$ increased in two, such that they are both increased in only one plot. This will show that while both parameters affect the estimation of unprivileged and additional fusion estimators, $\sigma_y$ and therefore $Y$ predominantly affects the unprivileged estimator and $\sigma_z$, $Z$, affects the additional fusion estimator.
 \end{itemize}
 
 % 
@@ -300,7 +305,7 @@ The abstract goes here.
 \section{Conclusion}\label{sec:conc}
 \begin{itemize}
   \item Concluding remarks.
-  \item Future work includes exploring key subsets that do not need to be sequential and decentralised methods for multi-key correlated noise generation.
+  \item Future work includes exploring key subsets that do not need to be sequential, decentralised methods for multi-key correlated noise generation, and the effects and cryptographic guarantees of sensors falling out of synchronisation.
 \end{itemize}
 
 % conference papers do not normally have an appendix
