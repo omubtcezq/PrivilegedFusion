@@ -86,12 +86,19 @@ The abstract goes here.
 % 
 
 \section{Introduction}\label{sec:intro}
+Sensor data processing and state estimation have long been active areas of research and continue to find more applications in modern systems \cite{ligginsDistributedDataFusion2012}. In the context of distributed sensing environments such as decentralised autonomous vehicles or distributed weather stations, estimation methods relying on Kalman filters and derivatives [] have found particular prevalence due to their recursive, often optimal, estimation properties [] and their suitabilty to modeling measurement cross-correlations typically required for data fusion []. In recent years, the increasing ubiquity of distributed public networks has seen additional requirements for preserving the privacy of algorithm participants' data, such as their individual contributions or identifying information, gain relevance and has led to an active field of research [].
+
+
+While only making transmitted information hold no information to eavesdroppers can be achieved with common public or symettric key encryption schemes [], distributed estimation tasks that preserve participant privacy often require schemes that allows some processing or data leakage []
+
+A series of existing methods tackle these tasks individually and put forward methods to provide some level of participant privacy in a well defined distributed enviroment
+
 \begin{itemize}
-  \item $3/4$ of a page including abstract. Can be relatively similar to the previous privilege paper.
+  \item $3/4$ of a page including abstract. Can be relatively similar to the previous privilege paper including references ().
   \item Role of estimation and increase in relevance of privacy and state secrecy.
   \item Usual methods hide all information, sometimes we want some leakage that can be used for a specific task.
   \item e.g. leakage of control inputs or leakage of information vector sums.
-  \item Idea of privilege, e.g. GPS \cite{grovesPrinciplesGNSSInertial2015}, chaotic systems.
+  \item Idea of privilege, e.g. GPS, chaotic systems.
   \item Interested in cryptographic quantisation, provided by the previous paper which considers linear systems and uses the optimality of the Kalman filter. Doesn't consider the effect of multiple privilege-providing sensors and the effect of fusing of their measurements without keys to obtain better estimates. 
   \item Contribution stated explicitly.
   \item Use case of the scenario, perhaps something where measurements are infrequent so synchronisation isn't a problem, like weather sensors. Alternatively, something relating to privileged access to sensor features.
