@@ -88,11 +88,21 @@ The abstract goes here.
 \section{Introduction}\label{sec:intro}
 Sensor data processing and state estimation have long been active areas of research and continue to find more applications in modern systems \cite{ligginsDistributedDataFusion2012}. In the context of distributed sensing environments such as decentralised autonomous vehicles or distributed weather stations, estimation methods relying on Kalman filters and derivatives [] have found particular prevalence due to their recursive, often optimal, estimation properties [] and their suitabilty to modeling measurement cross-correlations typically required for data fusion []. In recent years, the increasing ubiquity of distributed public networks has seen additional requirements for preserving the privacy of algorithm participants' data, such as their individual contributions or identifying information, gain relevance and has led to an active field of research [].
 
+While hiding transmitted information to eavesdroppers can be achieved using common encryption schemes that make ciphertexts indistinguishable [crypto book], distributed estimation tasks that preserve participants' privacies require information to remain hidden during partial or complete processing and often justify some amount of leakage [secfci,aggregation]. The security goals of these tasks are context specific and have produced a variety of solutions. In [drone], non-Bayesian state estimation is performed using homomorphic encryption such that individual sensor information and measurements remain private, while in [aristov], similar goals are achieved fusing linear measurements in a Bayesian setting when sensors form a heirarchical network. Homomorphic encryption is also used in combination with order-revealing encryption in [secfci] to solve conservative Gaussian estimate fusion while leaking only the ratios of estimate covariances, while [aggregation papers] introduce cryptographic aggregation schemes that leak the sum of particiapants' inputs to hide individual power consumptions in an energy grid. 
 
-While only making transmitted information hold no information to eavesdroppers can be achieved with common public or symettric key encryption schemes [], distributed estimation tasks that preserve participant privacy often require schemes that allows some processing or data leakage []
 
-A series of existing methods tackle these tasks individually and put forward methods to provide some level of participant privacy in a well defined distributed enviroment
+In addition to these types of privacy, estimation performance can also be privatised, introducing an estimation privilege where leakage defines the difference in performance between trusted and untrusted network estimators. In the original Global Positioning System (GPS) [gps], this was achieved with a secondary encrypted channel that allowed better estimation performance to parties which held an encryption key. In [chaos], a synchronised chaotic system is used to add noise to measurements which can only be removed by estimators knowing its properties. This idea of estimation privilege is further explored in [priv], where a formal cryptographic definition for the notion is given and a scheme for a single sensor and estimator is given using synchronised psuedorandom Gaussian samples as additive measurement noise and 
 
+is introduced where a difference in estimation between privileged and unprivileged estimators is quantified and proved cryptographically.
+
+
+
+
+In this work, we extend on the ideas presented in [priv], generalising the definition of privilege to allow 
+
+and consider the case where multiple sensors are present and their measurements fused for estimation.
+
+%papers: [aristov,secfci,drone,aggregation,gps,chaos,priv]
 \begin{itemize}
   \item $3/4$ of a page including abstract. Can be relatively similar to the previous privilege paper including references ().
   \item Role of estimation and increase in relevance of privacy and state secrecy.
