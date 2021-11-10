@@ -64,7 +64,7 @@ Email: benjamin.noack@ovgu.de}}
 
 % As a general rule, do not put math, special symbols or citations in the abstract
 \begin{abstract}
-Providing cryptographic privacy guarantees in a distributed state estimation problem has been a growing topic of research since the ubiquity of modern public networks. One such guarantee is having different levels of estimation performance achievable by trusted and untrusted users within a sensor network. In the presence of multiple sensor measurements, guaranteeing better estimation performance by the usual means of adding removable noise to measurements is complicated by an alternative for untrusted users to improve their performance; fusing more measurements. Our novel method adds correlated noise at different sensors, restricting the performance gained from fusing additional measurements while guaranteeing better performance to those that can remove it. We extend a cryptographic framework for defining estimation privilege and use this to prove the scheme's security goals, while simulations demonstrate the effects of parameters in a concrete estimation problem. A scheme that can ensure such differences in estimation performance between types of estimators can find applications in priority-based or subscription-based performances in environments where more than one sensor is present.
+Providing cryptographic privacy guarantees in a distributed state estimation problem has been a growing topic of research since the ubiquity of modern public networks. One such guarantee is having different levels of estimation performance achievable by trusted and untrusted users within a sensor network. In the presence of multiple sensor measurements, guaranteeing better estimation performance by the usual means of adding removable noise to measurements is complicated by an alternative for untrusted users to improve their performance: fusing more measurements. Our novel method adds correlated noise at different sensors, restricting the performance gained from fusing additional measurements while guaranteeing better performance to those that can remove it. We extend a cryptographic framework for defining estimation privilege and use this to prove the scheme's security goals, while simulations demonstrate the effects of parameters in a concrete estimation problem. A scheme that can ensure such differences in estimation performance between types of estimators can find applications in priority-based or subscription-based performances in environments where more than one sensor is present.
 \end{abstract}
 
 % no keywords
@@ -118,12 +118,47 @@ In section \ref{sec:prob}, the multisensor estimation privilege problem is prese
 % 
 
 \section{Problem Formulation}\label{sec:prob}
+We are interested in environments where multiple sensors are present and the fusion of their measurements can lead to better state estimation accuracy of the system they are measuring. In these environments, we want to provide levels of privilege to state estimators such those with a higher privilege can perform better than those with a lower one, while taking into consideration the estimation benefits from fusing additional measurements. We will consider linear and Gaussian models only, where a state $\vec{x}_k \in \mathbb{R}^n$ at an integer timestep $k$, follows a system model given by
+\begin{equation}
+  \vec{x}_k = \mat{F}_k \vec{x}_{k-1} + \vec{w}_k\,,
+\end{equation}
+with white noise term $\vec{w}_k \sim \mathcal{N}(\vec{0},\mat{Q}_k)$ and a known covariance $\mat{Q}_k \in \mathbb{R}^{n \times n}$. Similarly, measurements $\vec{y}_{k,i} \in \mathbb{R}^m$ from each sensor $i$, $1\leq i\leq N$, follow the measurement models
+\begin{equation}
+  \vec{y}_{k,i} = \mat{H}_{k,i} \vec{x}_k + \vec{v}_{k,i}\,,
+\end{equation}
+with white noise term $\vec{v}_{k,i} \sim \mathcal{N}(\vec{0},\mat{R}_{k,i})$ and a known covariance $\mat{R}_{k,i} \in \mathbb{R}^{m \times m}$. 
+
+Here, each sensor $i$ holds its own secret key $\mathsf{sk}_i$, 
+
+and we will consider
+
+which can be made available to an estimator of a suitable privilege. 
+
+
+% Before we introduce the means of modifying measurements with sensor keys to affect the estimation performance for different privileges, we must also define the considered privilege levels in terms of access to sensor keys.
+% In this work, we will consider privileges as knowing sequential sensor keys, in order to make correlated noise generation simpler.
+% That is, in the presence of $n$ sensors, we will consider exactly $n$ possible privilege levels, where each privilege $j$ corresponds to holding the sequential sensors' secret keys $sk_1,...,sk_j$ while being unprivileged corresponds to holding no secret keys.
+% As is intuitive, each successive privilege level, knowing exactly one additional sensor key, will correspond to better estimation results than the previous levels or the unprivileged case.
+
+
+
+In addition to considering linear systems, we will also assume that the sensors are synchronised in timesteps $k$ to simplify meaningful cryptographic evaluation. In practice, this would restrict the estimation schemes presented to scenarios where synchronisation is easier to guarantee, such as those where measurements are taken infrequently.
+
+To ensure the difference in estimation performance between estimators holding some subsets of sensor keys, we will consider two differences to cryptographically guarantee.
+\begin{description}
+  \item[Same Measurements] Firstly, we want a lower-bound on the difference between estimation performances of an estimator that holds no keys (\textit{unprivileged} estimator) but has access to all measurements and an estimator holding a subset of sensor keys (\textit{privileged} estimator) using only the measurements from the sensors which they hold a key
+  \item[Additional Measurements] 
+\end{description}
+
+
 \begin{itemize}
   \item We are considering an environment where multiple sensors are present and required for the greatest estimation accuracy of the system they are measuring.
   \item We want to provide multiple levels of privilege to estimators, such that estimators with a higher level of privilege can achieve better estimates given the same measurements.
   \item We consider linear system and measurement models, given by the usual equations, which will make proving relevant cryptographic privileges straightforward. Each sensor $i$ holds its own secret key $sk_i$, which can be made available to an estimator of a suitable privilege.
   \item In addition to linear systems, we will assume that the sensors are synchronised in time $k$ to simplify meaningful cryptographic evaluation when receiving measurements. In practice, this would restrict the estimation scheme to scenarios where measurements are taken infrequently and timestep synchronisation is easier to guarantee.
+  
   \item While we are interested in a cryptographic difference in estimation between estimators who do and do not hold sensor keys, respectively, the involvement of multiple sensors means that access to additional sensors and the fusing of measurements from sensors whose key is not known also need to be considered.
+  
   \item We want to provide a scheme for estimation privileges that guarantees two types of estimation differences.
   \item Firstly, we want a lower bound on the difference between estimation performance of an estimator that holds no sensor keys (an unprivileged estimator) but has access to all measurements, and an estimator holding a subset of sensor keys (a privileged estimator) using only measurements from sensors to which they hold a key. This construction means the bound remains a lower-bound when the unprivileged estimator has access to fewer sensors or when the privileged estimator has access to more and exhaustively captures the benefits of knowing sensor keys.
   \item Secondly, we want an upper bound on the additional estimation performance a privileged estimator can achieve by fusing measurements from sensors to which they do not hold a key. The motivation behind this guarantee is that fusing additional measurements from sensors whose keys are not known should not provide as much estimation benefit as acquiring another sensor key, thus preserving the order of possible estimation performance across privileges.
@@ -183,13 +218,14 @@ In section \ref{sec:prob}, the multisensor estimation privilege problem is prese
   \item The idea behind the privileged fusion scheme is to add correlated Gaussian keystreams to measurements from each sensor, which can be removed by estimators holding the respective sensor secret keys.
   \item As we assume that the sensors are synchronised, we can exactly capture the correlation between the modified measurements by considering the stacked measurement model when having access to $j$ sensors (stacked eq with modified $H^{(j)}$ and correlation matrix $C^{(j)}$, $j\leq n$).
 \end{itemize}
-\subsection{Privileges}\label{subsec:scheme_privileges}
-\begin{itemize}
-  \item Before we introduce the means of modifying measurements with sensor keys to affect the estimation performance for different privileges, we must also define the considered privilege levels in terms of access to sensor keys.
-  \item In this work, we will consider privileges as knowing sequential sensor keys, in order to make correlated noise generation simpler.
-  \item That is, in the presence of $n$ sensors, we will consider exactly $n$ possible privilege levels, where each privilege $j$ corresponds to holding the sequential sensors' secret keys $sk_1,...,sk_j$ while being unprivileged corresponds to holding no secret keys.
-  \item As is intuitive, each successive privilege level, knowing exactly one additional sensor key, will correspond to better estimation results than the previous levels or the unprivileged case.
-\end{itemize}
+% MOVED TO PROBLEM FORMULATION
+% \subsection{Privileges}\label{subsec:scheme_privileges}
+% \begin{itemize}
+%   \item Before we introduce the means of modifying measurements with sensor keys to affect the estimation performance for different privileges, we must also define the considered privilege levels in terms of access to sensor keys.
+%   \item In this work, we will consider privileges as knowing sequential sensor keys, in order to make correlated noise generation simpler.
+%   \item That is, in the presence of $n$ sensors, we will consider exactly $n$ possible privilege levels, where each privilege $j$ corresponds to holding the sequential sensors' secret keys $sk_1,...,sk_j$ while being unprivileged corresponds to holding no secret keys.
+%   \item As is intuitive, each successive privilege level, knowing exactly one additional sensor key, will correspond to better estimation results than the previous levels or the unprivileged case.
+% \end{itemize}
 \subsection{Noise Generation}\label{subsec:noise_gen}
 \begin{itemize}
   \item Similarly to the Gaussian keystream introduced earlier, pseudorandom standard normal samples can be correlated when transformed together even when generated using different keys.
