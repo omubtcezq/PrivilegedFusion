@@ -165,8 +165,27 @@ When defining our scheme and discussing its cryptographic guarantees, we will ma
 % 
 
 \subsection{Gaussian keystreams}\label{subsec:gauss_keystreams}
-A Gaussian keystream
+A Gaussian keystream is a sequence of pseudorandom multivariate Gaussian samples generated using a random key. When assuming that floating-point representations of Gaussian samples are sufficiently similar to truly Gaussian samples, the sequence is indistinguishable from a truly random multivariate Gaussian sequence to any observer not holding the key, while it is reproducible exactly by those that do. In practice, this assumption is reasonable due to the insignificance of the difference between the numbers in practice and the prevalence of floating-points in estimation theory.
 
+Can be constructed...
+$u_i\ \dot{\sim}\ \mathcal{U}(0,1)$
+$g_k\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S})$
+
+\begin{equation}
+  \vec{g}_k = \mat{A} \cdot 
+  \begin{bmatrix}
+    z_{(k-1)n+1} & \cdots & z_{kn}
+  \end{bmatrix}^\top
+\end{equation}
+where 
+\begin{equation}
+  z_i =
+  \begin{cases}
+    \sqrt{-2\ln(u_{2i})}\cos(2\pi u_{2i+1}), & i \text{ is odd}\\
+    \sqrt{-2\ln(u_{2i})}\sin(2\pi u_{2i+1}), & i \text{ is even}\\
+  \end{cases}
+\end{equation}
+for any matrix $\mat{A}$ such that $\mat{A}\mat{A}^\top = \mat{S}$.
 
 \begin{itemize}
   \item A Gaussian keystream is a sequence of pseudorandom Gaussian samples generated using a random key. The sequence is indistinguishable from a truly random Gaussian sequence to any observer that does not hold the key, while it is exactly reproducible if they do hold the key.
