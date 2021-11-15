@@ -22,6 +22,10 @@
 % Imports
 \usepackage{local_macros/isasmathmacros}
 
+% Environments
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
 
@@ -165,12 +169,9 @@ When defining our scheme and discussing its cryptographic guarantees, we will ma
 % 
 
 \subsection{Gaussian keystreams}\label{subsec:gauss_keystreams}
-A Gaussian keystream is a sequence of pseudorandom multivariate Gaussian samples generated using a random key. When assuming that floating-point representations of Gaussian samples are sufficiently similar to truly Gaussian samples, the sequence is indistinguishable from a truly random multivariate Gaussian sequence to any observer not holding the key, while it is reproducible exactly by those that do. In practice, this assumption is reasonable due to the insignificance of the difference between the numbers in practice and the prevalence of floating-points in estimation theory.
+A Gaussian keystream is a sequence of pseudorandom multivariate Gaussian samples $\vec{g}_k\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S})$, $k>0$, for some covariance matrix $\mat{S}$, generated using a secret key. The sequence is indistinguishable from a truly random multivariate Gaussian sequence to any observer who does not hold the key while being reproducible exactly by those that do. The keystream can be constructed from a typical cryptographic stream cipher \cite[Ch. 3.6]{katzIntroductionModernCryptography2008}, by using any common method for random floating-point generation \cite{goualardGeneratingRandomFloatingPoint2020} to create a stream of pseudorandom uniform samples $u_i\ \dot{\sim}\ \mathcal{U}(0,1)$, $i>0$. Here, we make the assumption that floating-point representations of real numbers are sufficiently similar to actual real numbers, made reasonable in practice due to the insignificance of their difference in many applications and their prevalence in estimation theory.
 
-Can be constructed...
-$u_i\ \dot{\sim}\ \mathcal{U}(0,1)$
-$g_k\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S})$
-
+To construct the Gaussian keystream $\vec{g}_k$, $k>0$ from the uniform one $u_i$, $i>0$, the Box-Muller transform can be used, such that
 \begin{equation}
   \vec{g}_k = \mat{A} \cdot 
   \begin{bmatrix}
@@ -187,13 +188,6 @@ where
 \end{equation}
 for any matrix $\mat{A}$ such that $\mat{A}\mat{A}^\top = \mat{S}$.
 
-\begin{itemize}
-  \item A Gaussian keystream is a sequence of pseudorandom Gaussian samples generated using a random key. The sequence is indistinguishable from a truly random Gaussian sequence to any observer that does not hold the key, while it is exactly reproducible if they do hold the key.
-  \item A Gaussian keystream can be constructed from any cryptographic bitstream cipher when making the floating-point randomness assumption.
-  \item Give the assumption about floating-point numbers and why they are reasonable to use in place of truly random real numbers in cryptography proofs.
-  \item Define the equations for turning a bitstream cipher into a multivariate Gaussian stream with multivariate covariance denote $S$.
-\end{itemize}
-
 % 
 % ########  ########  #### ##     ##    ########  ######## ######## 
 % ##     ## ##     ##  ##  ##     ##    ##     ## ##       ##       
@@ -205,13 +199,25 @@ for any matrix $\mat{A}$ such that $\mat{A}\mat{A}^\top = \mat{S}$.
 % 
 
 \subsection{Cryptographic Estimation Privilege}\label{subsec:crypto_privilege}
-\begin{itemize}
-  \item The formal definition of a privileged estimation scheme was introduced in (previous paper) and captures a reduction in estimation performance that can always be achieved for an estimator not knowing the scheme key compared to one knowing it and unmodified measurements.
-  \item We will use a slight generalisation of this definition to capture an arbitrary difference in estimation that can always be achieved between two estimators given the measurements they have access to.
-  \item Define a privileged estimation scheme (Setup and Noise) but with modified Noise to allow the case that neither estimator has access to true measurements.
-  \item Define a privileged estimation scheme where series $D_k$ can be positive or negative definite.
-  \item We note that the difference in the generalised definition above is that the estimator for which we bound estimation performance, considered unprivileged, may perform better than the privileged estimator. That is, the difference series $D_k$ may be negative-definite. This feature will be useful when discussing the additional estimation performance a privileged estimator can achieve by fusing measurements from sensors to which they do not hold a key.
-\end{itemize}
+The formal definition of a privileged estimation scheme and accompanying notion of covariance privilege are introduced in \cite{risticCryptographicallyPrivilegedState2022} and capture a reduction in estimation performance that can always be achieved from a probabilistic polynomial-time (PPT) estimator knowing only unprivileged measurements, and holding no scheme key, to one knowing both the key and privileged measurements. We will use a slight generalisation of this definition to capture an arbitrary difference that can always be achieved between the estimators (rather than only a reduction).
+A privileged estimation scheme is defined by a pair of probabilistic algorithms $(\mathsf{Setup}, \mathsf{Noise})$:
+\begin{LaTeXdescription}
+  \item[$\mathsf{Setup}(\mathcal{M}_S,\mathcal{M}_M,\kappa)$] Given system and measurement models $\mathcal{M}_S$ and $\mathcal{M}_M$, and the security parameter $\kappa$, public parameters $\mathsf{pub}$ and a secrect key $\mathsf{sk}$ are returned.
+  \item[$\mathsf{Noise}(\mathsf{pub},\mathsf{sk},k,\mathcal{M}_S,\mathcal{M}_M,\vec{y}_1,\dots,\vec{y}_k)$] Given public parameters $\mathsf{pub}$, secret key $\mathsf{sk}$, timestep $k$, models $\mathcal{M}_S$ and $\mathcal{M}_M$, and measurements $\vec{y}_1,\dots,\vec{y}_k$, modified privileged and unprivileged measurements, $\vec{y}^{(p)}_k$ and $\vec{y}^{(up)}_k$, respectively, are returned.
+\end{LaTeXdescription}
+Using the defintions from \cite{risticCryptographicallyPrivilegedState2022} for an \textit{estimator} and \textit{negligible covariance} $\mathsf{neglCov}_m(\kappa)$, the notion of covariance privilege is defined as follows.
+\begin{definition}
+  A privileged estimation scheme meets notion \textit{$\{\mat{D}_1,\mat{D}_2,\dots\}$-Covariance Privilege for Models $\mathcal{M}_S$ and $\mathcal{M}_M$} if for any PPT estimator $\mathcal{A}$, there exists a PPT estimator $\mathcal{A}^\prime$, such that
+  \begin{equation}\label{eqn:cov_priv_security_notion}
+    \begin{split}
+      &\mathsf{Cov}\left[\mathcal{A}\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{(up)}_1,\dots,\vec{y}^{(up)}_k\right) - \vec{x}_k\right]\\
+      &-\mathsf{Cov}\left[\mathcal{A}^\prime\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{(p)}_1,\dots,\vec{y}^{(p)}_k\right) - \vec{x}_k\right]\\
+      &\quad\succeq \mat{D}_k - \mathsf{neglCov}_m(\kappa)
+    \end{split}
+  \end{equation}
+  for all $k>0$, some negligible covariance and where matrices $\mat{D}_k$ are definite, \textit{i.e.}, $\mat{D}_k \preceq \mat{0}$ or $\mat{D}_k \succeq \mat{0}$. Here, $\mathcal{A}$ and $\mathcal{A}^\prime$ are running in polynomial-time with respect to the parameter $\kappa$ and all probabilities are taken over randomness introduced in models $\mathcal{M}_S$ and $\mathcal{M}_M$, estimators $\mathcal{A}$ and $\mathcal{A}^\prime$, and algorithms $\mathsf{Setup}$ and $\mathsf{Noise}$.
+\end{definition}
+We note that in the generalised notion \eqref{eqn:cov_priv_security_notion}, $\mat{D}_k\preceq \mat{0}$ is allowed, and unprivileged estimators may now perform better than privileged ones, albeit by a bounded amount. This feature will be useful when discussing additional estimation performance gainable from fusing unprivileged measurements. Lastly, a sign is also corrected, such that negligible covariances are subtracted (rather than added), correctly capturing the additional negligible performance gainable by an unprivileged estimator.
 
 % 
 %  .d8888b.   .d8888b.  888    888 8888888888 888b     d888 8888888888 
