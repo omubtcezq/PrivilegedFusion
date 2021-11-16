@@ -126,13 +126,13 @@ We are interested in environments where multiple sensors are present and the fus
 \begin{equation}
   \vec{x}_k = \mat{F}_k \vec{x}_{k-1} + \vec{w}_k\,,
 \end{equation}
-with white noise term $\vec{w}_k \sim \mathcal{N}(\vec{0},\mat{Q}_k)$ and a known covariance $\mat{Q}_k \in \mathbb{R}^{n \times n}$. Similarly, measurements $\vec{y}_{k,i} \in \mathbb{R}^m$ from each sensor $\mathsf{s}_i$, $1\leq i\leq N$, follow the measurement models
+with white noise term $\vec{w}_k \sim \mathcal{N}(\vec{0},\mat{Q}_k)$ and a known covariance $\mat{Q}_k \in \mathbb{R}^{n \times n}$. Similarly, measurements $\vec{y}_{k,i} \in \mathbb{R}^m$ from each sensor $i$, $1\leq i\leq N$, follow the measurement models
 \begin{equation}
   \vec{y}_{k,i} = \mat{H}_{k,i} \vec{x}_k + \vec{v}_{k,i}\,,
 \end{equation}
-with white noise term $\vec{v}_{k,i} \sim \mathcal{N}(\vec{0},\mat{R}_{k,i})$ and a known covariance $\mat{R}_{k,i} \in \mathbb{R}^{m \times m}$. In addition to these models, we assume that all sensors $\mathsf{s}_i$ are synchronised in timesteps $k$ to simplify later cryptographic evaluation. In practice, this would restrict the presented schemes to scenarios where synchronisation is easier to guarantee, such as ones where measurements are taken infrequently.
+with white noise term $\vec{v}_{k,i} \sim \mathcal{N}(\vec{0},\mat{R}_{k,i})$ and a known covariance $\mat{R}_{k,i} \in \mathbb{R}^{m \times m}$. In addition to these models, we assume that all sensors $i$ are synchronised in timesteps $k$ to simplify later cryptographic evaluation. In practice, this would restrict the presented schemes to scenarios where synchronisation is easier to guarantee, such as ones where measurements are taken infrequently.
 
-Each of the sensors $\mathsf{s}_i$ also holds a secret key $\mathsf{sk}_i$, which can be made available to estimators of appropriate privilege. The privileges that we consider, in terms of access to keys, are defined by sequential sensors. That is, in the presence of $N$ sensors, we consider exactly $N$ possible privilege levels, where each privilege $p>0$ corresponds to holding the sequential secret keys $\mathsf{sk}_j$, $1\leq j \leq p$ while being unprivileged, $p=0$, corresponds to holding none. We assume that estimators have access to all ``privileged measurements'', those from sensors whose keys they hold, but can also fuse some ``unprivileged measurements'' from those whose keys they do not hold. We can therefore capture their capabilities by letting $\mathsf{e}_{p,q}$ denote an estimator with privilege $p$ and access to measurements from $q\geq p$ sensors: $\mathsf{s}_j$, $1\leq j \leq p$, as well as $q-p$ arbitrary remaining sensors.
+Each of the sensors also holds a secret key $\mathsf{sk}_i$, which can be made available to estimators of appropriate privilege. The privileges that we consider, in terms of access to keys and measurements, will be defined by sequential sensors. That is, in the presence of $N$ sensors, we consider exactly $N$ possible privilege levels, where each privilege $p>0$ corresponds to holding the sequential secret keys $\mathsf{sk}_j$, $1\leq j \leq p$ while being unprivileged, $p=0$, corresponds to holding none. We assume that estimators have access to all ``privileged measurements'', those from sensors whose keys they hold, and can additionally fuse ``unprivileged measurements'' from those whose keys they do not hold. We can therefore capture their capabilities by letting $\mathsf{e}_{p,q}$ denote an estimator with privilege $p$ and access to measurements from $q\geq p$ sensors, $1\leq i \leq q$.
 
 To cryptographically guarantee the difference between estimation performances, we will use the notion of covariance privilege introduced in \cite{risticCryptographicallyPrivilegedState2022} and given in section \ref{sec:prelim}. As we want better performance for higher privilege estimators as well as to limit the gained performance from fusing unprivileged measurements, two differences will be considered.
 \begin{LaTeXdescription}
@@ -171,22 +171,26 @@ When defining our scheme and discussing its cryptographic guarantees, we will ma
 \subsection{Gaussian keystreams}\label{subsec:gauss_keystreams}
 A Gaussian keystream is a sequence of pseudorandom multivariate Gaussian samples $\vec{g}_k\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S})$, $k>0$, for some covariance matrix $\mat{S}$, generated using a secret key. The sequence is indistinguishable from a truly random multivariate Gaussian sequence to any observer who does not hold the key while being reproducible exactly by those that do. The keystream can be constructed from a typical cryptographic stream cipher \cite[Ch. 3.6]{katzIntroductionModernCryptography2008}, by using any common method for random floating-point generation \cite{goualardGeneratingRandomFloatingPoint2020} to create a stream of pseudorandom uniform samples $u_i\ \dot{\sim}\ \mathcal{U}(0,1)$, $i>0$. Here, we make the assumption that floating-point representations of real numbers are sufficiently similar to actual real numbers, made reasonable in practice due to the insignificance of their difference in many applications and their prevalence in estimation theory.
 
-To construct the Gaussian keystream $\vec{g}_k$, $k>0$ from the uniform one $u_i$, $i>0$, the Box-Muller transform can be used, such that
-\begin{equation}
-  \vec{g}_k = \mat{A} \cdot 
+To construct the Gaussian keystream $\vec{g}_k$, $k>0$, from the uniform one $u_i$, $i>0$, a vector of uncorrelated standard Gaussian samples $\vec{z}_k$ is first generated using the Box-Muller transform,
+\begin{equation}\label{eqn:standard_gaussian_generation}
+    \vec{z}_k = 
   \begin{bmatrix}
     z_{(k-1)n+1} & \cdots & z_{kn}
   \end{bmatrix}^\top
 \end{equation}
 where 
-\begin{equation}
+\begin{equation*}
   z_i =
   \begin{cases}
     \sqrt{-2\ln(u_{2i})}\cos(2\pi u_{2i+1}), & i \text{ is odd}\\
     \sqrt{-2\ln(u_{2i})}\sin(2\pi u_{2i+1}), & i \text{ is even}\\
-  \end{cases}
+  \end{cases}\,,
+\end{equation*}
+and then correlated by
+\begin{equation}\label{eqn:gaussian_keystream_generation}
+    \vec{g}_k = \mat{A}\vec{z}_k\,,
 \end{equation}
-for any matrix $\mat{A}$ such that $\mat{A}\mat{A}^\top = \mat{S}$.
+where $\mat{A}$ is any matrix such that $\mat{A}\mat{A}^\top = \mat{S}$.
 
 % 
 % ########  ########  #### ##     ##    ########  ######## ######## 
@@ -234,27 +238,89 @@ We note that in the generalised notion \eqref{eqn:cov_priv_security_notion}, $\m
 % 
 
 \section{Privileged Fusion}\label{sec:scheme}
-\begin{itemize}
-  \item The idea behind the privileged fusion scheme is to add correlated Gaussian keystreams to measurements from each sensor, which can be removed by estimators holding the respective sensor secret keys.
-  \item As we assume that the sensors are synchronised, we can exactly capture the correlation between the modified measurements by considering the stacked measurement model when having access to $j$ sensors (stacked eq with modified $H^{(j)}$ and correlation matrix $C^{(j)}$, $j\leq n$).
-\end{itemize}
-% MOVED TO PROBLEM FORMULATION
-% \subsection{Privileges}\label{subsec:scheme_privileges}
-% \begin{itemize}
-%   \item Before we introduce the means of modifying measurements with sensor keys to affect the estimation performance for different privileges, we must also define the considered privilege levels in terms of access to sensor keys.
-%   \item In this work, we will consider privileges as knowing sequential sensor keys, in order to make correlated noise generation simpler.
-%   \item That is, in the presence of $n$ sensors, we will consider exactly $n$ possible privilege levels, where each privilege $j$ corresponds to holding the sequential sensors' secret keys $sk_1,...,sk_j$ while being unprivileged corresponds to holding no secret keys.
-%   \item As is intuitive, each successive privilege level, knowing exactly one additional sensor key, will correspond to better estimation results than the previous levels or the unprivileged case.
-% \end{itemize}
+The idea behind our privileged estimation fusion scheme is to add correlated Gaussian keystreams to the measurements from each sensor. The noises can be removed by estimators holding respective sensor keys, while the correlation limits the additional information from fusing unprivileged measurements. As we assume that sensors are synchronised, we can capture the correlation between the modified measurements exactly by considering the stacked measurement model at time $k$, for an estimator with access to $q\leq N$ measurements, as
+\begin{equation}
+  \vec{y}_k^{(q)} = \mat{H}_k^{(q)}\vec{x}_k + \vec{v}_k^{(q)}
+\end{equation}
+where $\vec{v}_k^{(q)}\sim\mathcal{N}(\vec{0},\mat{R}^{(q)})$, with
+\begin{equation*}
+  \vec{y}_k^{(q)}=
+  \begin{bmatrix}
+    \vec{y}_{k,1}\\
+    \vdots\\
+    \vec{y}_{k,q}
+  \end{bmatrix},\ 
+  \mat{H}_k^{(q)}=
+  \begin{bmatrix}
+    \mat{H}_{k,1}\\
+    \vdots\\
+    \mat{H}_{k,q}\\
+  \end{bmatrix}, \
+  \vec{v}_k^{(q)}=
+  \begin{bmatrix}
+    \vec{v}_{k,1}\\
+    \vdots\\
+    \vec{v}_{k,q}
+  \end{bmatrix}
+\end{equation*}
+and
+\begin{equation*}
+  \mat{R}^{(q)}=\mathsf{diag}\left(
+    \begin{bmatrix}
+      \mat{R}_{k,1}\\
+      \vdots\\
+      \mat{R}_{k,q}
+    \end{bmatrix}\right)\,.
+\end{equation*}
+With measurement equations in this form, we can introduce the means of modifying measurements to affect estimation performance.
+
 \subsection{Noise Generation}\label{subsec:noise_gen}
+Similarly to the Gaussian keystream generation in \eqref{eqn:gaussian_keystream_generation}, pseudorandom samples can be correlated in this way even when generated using different stream cipher keys. To parameterise the correlation between noises at each sensor, we introduce a fully correlated component $\mat{Z}\in\mathbb{R}^{m\times m}$ and an uncorrelated component $\mat{Y}\in\mathbb{R}^{m\times m}$ and define a noise cross-correlation matrix for $N$ sensors, $\mat{S} \in \mathbb{R}^{Nm\times Nm}$, as
+\begin{equation}
+  \mat{S}=
+  \begin{bmatrix}
+    \mat{Z} & \cdots & \mat{Z}\\
+    \vdots & \ddots & \vdots\\
+    \mat{Z} & \cdots & \mat{Z}\\
+  \end{bmatrix}+\mathsf{diag}\left(
+  \begin{bmatrix}
+    \mat{Y}\\
+    \vdots\\
+    \mat{Y}\\
+  \end{bmatrix}\right)\,.
+\end{equation}
+The generation of all Gaussian noises at timestep $k$, can then be computed by
+\begin{equation}
+  \begin{bmatrix}
+    \vec{g}_{k,1}\\
+    \vdots\\
+    \vec{g}_{k,N}
+  \end{bmatrix}=
+  \mat{S}^\frac{1}{2}\cdot
+  \begin{bmatrix}
+    \vec{z}_{k,1}\\
+    \vdots\\
+    \vec{z}_{k,N}
+  \end{bmatrix}\,,
+\end{equation}
+where each $\vec{z}_{k,i}$ is computed as $\vec{z}_k$ in \eqref{eqn:standard_gaussian_generation} using cipher key $\mathsf{sk}_i$ and $\mat{S}^\frac{1}{2}$ is a matrix such that $\mat{S}^\frac{1}{2}\mat{S}^{\frac{1}{2}\top}=\mat{S}$. The noises $\vec{g}_{k,i}$ can then be added to measurements from each sensor $i$, at timestep $k$, resulting in the modified measurement equations
+\begin{equation}
+\begin{split}
+  \vec{y}_{k,i}^{(up)} &= \vec{y}_{k,i} + \vec{g}_{k,i}\\
+  &= \mat{H}_{k,i}\vec{x}_k + \vec{v}_{k,i} + \vec{g}_{k,i}\,,
+\end{split}
+\end{equation}
+where $\vec{v}_{k,i}\sim\mathcal{N}(\vec{0},\mat{R}_{k,i})$ and $\left[\vec{g}_{k,1}\ \cdots\ \vec{g}_{k,N}\right]^\top\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S})$.
+
 \begin{itemize}
-  \item Similarly to the Gaussian keystream introduced earlier, pseudorandom standard normal samples can be correlated when transformed together even when generated using different keys.
-  \item To capture a correlation between additive noises from each sensor, we introduce the fully correlated component $Z$ and the uncorrelated component $Y$ and given $n$ sensors we define the generated noise cross-correlation matrix as $S$ (give equation).
-  \item The generation of the additive noise can then be computed with $m$ standard normal pseudorandom samples generated from keys of each sensor with the following equation (using $S^{1/2}$) and added to the measurements at every timestep $k$ as follows (give measurements equation with two noises).
+  %\item Similarly to the Gaussian keystream introduced earlier, pseudorandom standard normal samples can be correlated when transformed together even when generated using different keys.
+  %\item To capture a correlation between additive noises from each sensor, we introduce the fully correlated component $Z$ and the uncorrelated component $Y$ and given $n$ sensors we define the generated noise cross-correlation matrix as $S$ (give equation).
+  %\item The generation of the additive noise can then be computed with $m$ standard normal pseudorandom samples generated from keys of each sensor with the following equation (using $S^{1/2}$) and added to the measurements at every timestep $k$ as follows (give measurements equation with two noises).
   \item In the equation above, computing $S^{1/2}$ requires more than the simpler requirement in single sensor pseudorandom Gaussian keystream ($S^{1/2}S^{1/2\top}=S)$), as the form of the matrix $S^{1/2}$ will affect which subsets of keys are sufficient for partially computing the correlated noises. That is, privileged estimators that only hold a subset of sensor keys should still be able to generate the correlated pseudorandom Gaussian keystream for the subset of sensors for which they hold keys, but not for the remaining sensors.
   \item To achieve this and support the privileges introduced in the previous subsection, a lower-triangular form of $S^{1/2}$ is required, for which we will use the Cholesky decomposition. In this form, computing $S^{1/2}$ for a subset of sensors $1,...,j$, $j\leq n$ satisfies the following (equation showing that this matrix is the top left block matrix of the equivalent decomposition for all $n$ sensors).
   \item Now, an estimator of privilege $j$ (that holds the keys $sk_1,...,sk_j$, $j\leq n$), can correctly generate the noises for sensors $1,...,j$ by computing (give partial generation equation up to sensor $j$).
   \item The subset of computed noises can then be removed from received sensor measurements $z'_1,...,z'_j$ by subtracting it.
+  
   \item Since we are using a cryptographically sound stream cipher, pseudorandom Gaussian samples are indistinguishable from truly random ones to an estimator not holding any relevant keys. We can then consider three estimation problems.
   \item First, an estimator with access to $j$ sensors and no keys (unprivileged estimator) will have measurements indistinguishable from those following the measurement model given by (model but with additional measurement noise $Y$ and $Z$).
   \item Second, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ can remove all added pseudorandom noise from observable measurements and follows the measurement model given earlier exactly.
