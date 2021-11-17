@@ -238,41 +238,17 @@ We note that in the generalised notion \eqref{eqn:cov_priv_security_notion}, $\m
 % 
 
 \section{Privileged Fusion}\label{sec:scheme}
-The idea behind our privileged estimation fusion scheme is to add correlated Gaussian keystreams to the measurements from each sensor. The noises can be removed by estimators holding respective sensor keys, while the correlation limits the additional information from fusing unprivileged measurements. As we assume that sensors are synchronised, we can capture the correlation between the modified measurements exactly by considering the stacked measurement model at time $k$, for an estimator with access to $q\leq N$ measurements, as
-\begin{equation}
-  \vec{y}_k^{(q)} = \mat{H}_k^{(q)}\vec{x}_k + \vec{v}_k^{(q)}
-\end{equation}
-where $\vec{v}_k^{(q)}\sim\mathcal{N}(\vec{0},\mat{R}^{(q)})$, with
-\begin{equation*}
-  \vec{y}_k^{(q)}=
-  \begin{bmatrix}
-    \vec{y}_{k,1}\\
-    \vdots\\
-    \vec{y}_{k,q}
-  \end{bmatrix},\ 
-  \mat{H}_k^{(q)}=
-  \begin{bmatrix}
-    \mat{H}_{k,1}\\
-    \vdots\\
-    \mat{H}_{k,q}\\
-  \end{bmatrix}, \
-  \vec{v}_k^{(q)}=
-  \begin{bmatrix}
-    \vec{v}_{k,1}\\
-    \vdots\\
-    \vec{v}_{k,q}
-  \end{bmatrix}
-\end{equation*}
-and
-\begin{equation*}
-  \mat{R}^{(q)}=\mathsf{diag}\left(
-    \begin{bmatrix}
-      \mat{R}_{k,1}\\
-      \vdots\\
-      \mat{R}_{k,q}
-    \end{bmatrix}\right)\,.
-\end{equation*}
-With measurement equations in this form, we can introduce the means of modifying measurements to affect estimation performance.
+The idea behind our privileged estimation fusion scheme is to add \textit{correlated} Gaussian keystreams to the measurements from each sensor. These noises can be computed and subtracted by estimators holding respective sensor keys, while their correlation limits the additional information gained from fusing unprivileged measurements. 
+
+% 
+% ##    ##  #######  ####  ######  ########     ######   ######## ##    ## 
+% ###   ## ##     ##  ##  ##    ## ##          ##    ##  ##       ###   ## 
+% ####  ## ##     ##  ##  ##       ##          ##        ##       ####  ## 
+% ## ## ## ##     ##  ##   ######  ######      ##   #### ######   ## ## ## 
+% ##  #### ##     ##  ##        ## ##          ##    ##  ##       ##  #### 
+% ##   ### ##     ##  ##  ##    ## ##          ##    ##  ##       ##   ### 
+% ##    ##  #######  ####  ######  ########     ######   ######## ##    ## 
+% 
 
 \subsection{Noise Generation}\label{subsec:noise_gen}
 Similarly to the Gaussian keystream generation in \eqref{eqn:gaussian_keystream_generation}, pseudorandom samples can be correlated in this way even when generated using different stream cipher keys. To parameterise the correlation between noises at each sensor, we introduce a fully correlated component $\mat{Z}\in\mathbb{R}^{m\times m}$ and an uncorrelated component $\mat{Y}\in\mathbb{R}^{m\times m}$ and define a noise cross-correlation matrix for $N$ sensors, $\mat{S} \in \mathbb{R}^{Nm\times Nm}$, as
@@ -289,8 +265,9 @@ Similarly to the Gaussian keystream generation in \eqref{eqn:gaussian_keystream_
     \mat{Y}\\
   \end{bmatrix}\right)\,.
 \end{equation}
-The generation of all Gaussian noises at timestep $k$, can then be computed by
-\begin{equation}
+The generation of all $N$ Gaussian noises at timestep $k$, $\vec{g}_k^{(N)}$, can now be written as
+\begin{equation}\label{eqn:all_correletaed_noises_generation}
+  \vec{g}_k^{(N)}=
   \begin{bmatrix}
     \vec{g}_{k,1}\\
     \vdots\\
@@ -303,7 +280,34 @@ The generation of all Gaussian noises at timestep $k$, can then be computed by
     \vec{z}_{k,N}
   \end{bmatrix}\,,
 \end{equation}
-where each $\vec{z}_{k,i}$ is computed as $\vec{z}_k$ in \eqref{eqn:standard_gaussian_generation} using cipher key $\mathsf{sk}_i$ and $\mat{S}^\frac{1}{2}$ is a matrix such that $\mat{S}^\frac{1}{2}\mat{S}^{\frac{1}{2}\top}=\mat{S}$. The noises $\vec{g}_{k,i}$ can then be added to measurements from each sensor $i$, at timestep $k$, resulting in the modified measurement equations
+where each $\vec{z}_{k,i}$ is first computed as $\vec{z}_k$ in \eqref{eqn:standard_gaussian_generation}, using uniform samples generated with cipher key $\mathsf{sk}_i$, and $\mat{S}^\frac{1}{2}$ is a matrix such that $\mat{S}^\frac{1}{2}\mat{S}^{\frac{1}{2}\top}=\mat{S}$. Notably, it is important that the first $p$ noises $\vec{g}_{k,1},\dots,\vec{g}_{k,p}$ in \eqref{eqn:all_correletaed_noises_generation}, denoted $\vec{g}_k^{(p)}$, can be reproduced by an estimator of privilege $p$, holding only the keys $\mathsf{sk}_i$, $1\leq i \leq p$. When $\mat{S}^\frac{1}{2}$ is a lower-triangular matrix, as is the case when using the Cholesky decomposition of $\mat{S}$, each correlated Gaussian sample $\vec{g}_{k,i}$ is computable from preceeding uniform samples only, $\vec{z}_{k,j}$, $j\leq i$. Then, the generalised noise generation equation
+\begin{equation}\label{eqn:p_correletaed_noises_generation}
+  \vec{g}_k^{(p)}=
+  \mat{S}^{\frac{1}{2}(p)}\cdot
+  \begin{bmatrix}
+    \vec{z}_{k,1}\\
+    \vdots\\
+    \vec{z}_{k,p}
+  \end{bmatrix}\,,
+\end{equation}
+where $\mat{S}^{\frac{1}{2}(p)}\in\mathbb{R}^{pm\times pm}$ is the top left block from the lower-triangular matrix $\mat{S}^\frac{1}{2}$, can be used to generate the same first $p$ noises $\vec{g}_k^{(p)}$ as would be obtained from \eqref{eqn:all_correletaed_noises_generation}.
+
+With \eqref{eqn:p_correletaed_noises_generation}, at every timestep $k$, $\vec{g}_k^{(N)}$ can be generated using all $N$ keys and used to modify sensor measurements, while the subset $\vec{g}_k^{(p)}$ can be generated by estimators of privilege $p$ using the only keys they hold.
+
+% 
+% ##     ##  #######  ########  ######## ##          ##     ##  #######  ########  
+% ###   ### ##     ## ##     ## ##       ##          ###   ### ##     ## ##     ## 
+% #### #### ##     ## ##     ## ##       ##          #### #### ##     ## ##     ## 
+% ## ### ## ##     ## ##     ## ######   ##          ## ### ## ##     ## ##     ## 
+% ##     ## ##     ## ##     ## ##       ##          ##     ## ##     ## ##     ## 
+% ##     ## ##     ## ##     ## ##       ##          ##     ## ##     ## ##     ## 
+% ##     ##  #######  ########  ######## ########    ##     ##  #######  ########  
+% 
+
+\subsection{Measurement Modification}
+With a way to generate noises for sensors and estimators, we can introduce the means of measurement modification and the observable measurement models for different estimators.
+
+Measurement modification is peformed by adding noises $\vec{g}_k^{(N)}$ to measurements from each sensor $i$ before making them public, resulting in modified measurement equations for each sensor,
 \begin{equation}
 \begin{split}
   \vec{y}_{k,i}^{(up)} &= \vec{y}_{k,i} + \vec{g}_{k,i}\\
@@ -312,12 +316,51 @@ where each $\vec{z}_{k,i}$ is computed as $\vec{z}_k$ in \eqref{eqn:standard_gau
 \end{equation}
 where $\vec{v}_{k,i}\sim\mathcal{N}(\vec{0},\mat{R}_{k,i})$ and $\left[\vec{g}_{k,1}\ \cdots\ \vec{g}_{k,N}\right]^\top\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S})$.
 
+
+
+
+As we assume that sensors are synchronised, we can capture the correlation between modified measurements exactly by considering the stacked measurement model for an estimator $\mathsf{e}_{p,q}$ at time $k$,
+\begin{equation}
+  \vec{y}_k^{(p,q)} = \mat{H}_k^{(q)}\vec{x}_k + \vec{v}_k^{(q)} + \vec{g}_k^{(p,q)}
+\end{equation}
+where $\vec{v}_k^{(q)}\sim\mathcal{N}(\vec{0},\mat{R}_k^{(q)})$ and $\vec{g}_k^{(p,q)}\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S})$, with
+\begin{equation*}
+  \vec{y}_k^{(p,q)}=
+  \begin{bmatrix}
+    \vec{y}_{k,1}\\
+    \vdots\\
+    \vec{y}_{k,q}
+  \end{bmatrix},\ 
+  \mat{H}_k^{(q)}=
+  \begin{bmatrix}
+    \mat{H}_{k,1}\\
+    \vdots\\
+    \mat{H}_{k,q}\\
+  \end{bmatrix}, \
+  \vec{v}_k^{(q)}=
+  \begin{bmatrix}
+    \vec{v}_{k,1}\\
+    \vdots\\
+    \vec{v}_{k,q}
+  \end{bmatrix}\,,
+\end{equation*}
+\begin{equation*}
+  \mat{R}_k^{(q)}=\mathsf{diag}\left(
+    \begin{bmatrix}
+      \mat{R}_{k,1}\\
+      \vdots\\
+      \mat{R}_{k,q}
+    \end{bmatrix}\right)\,
+\end{equation*}
+and some cross-correlation matrix $\mat{S}$.
+
+
 \begin{itemize}
   %\item Similarly to the Gaussian keystream introduced earlier, pseudorandom standard normal samples can be correlated when transformed together even when generated using different keys.
   %\item To capture a correlation between additive noises from each sensor, we introduce the fully correlated component $Z$ and the uncorrelated component $Y$ and given $n$ sensors we define the generated noise cross-correlation matrix as $S$ (give equation).
-  %\item The generation of the additive noise can then be computed with $m$ standard normal pseudorandom samples generated from keys of each sensor with the following equation (using $S^{1/2}$) and added to the measurements at every timestep $k$ as follows (give measurements equation with two noises).
-  \item In the equation above, computing $S^{1/2}$ requires more than the simpler requirement in single sensor pseudorandom Gaussian keystream ($S^{1/2}S^{1/2\top}=S)$), as the form of the matrix $S^{1/2}$ will affect which subsets of keys are sufficient for partially computing the correlated noises. That is, privileged estimators that only hold a subset of sensor keys should still be able to generate the correlated pseudorandom Gaussian keystream for the subset of sensors for which they hold keys, but not for the remaining sensors.
-  \item To achieve this and support the privileges introduced in the previous subsection, a lower-triangular form of $S^{1/2}$ is required, for which we will use the Cholesky decomposition. In this form, computing $S^{1/2}$ for a subset of sensors $1,...,j$, $j\leq n$ satisfies the following (equation showing that this matrix is the top left block matrix of the equivalent decomposition for all $n$ sensors).
+  \item The generation of the additive noise can then be computed with $m$ standard normal pseudorandom samples generated from keys of each sensor with the following equation (using $S^{1/2}$) and added to the measurements at every timestep $k$ as follows (give measurements equation with two noises).
+  %\item In the equation above, computing $S^{1/2}$ requires more than the simpler requirement in single sensor pseudorandom Gaussian keystream ($S^{1/2}S^{1/2\top}=S)$), as the form of the matrix $S^{1/2}$ will affect which subsets of keys are sufficient for partially computing the correlated noises. That is, privileged estimators that only hold a subset of sensor keys should still be able to generate the correlated pseudorandom Gaussian keystream for the subset of sensors for which they hold keys, but not for the remaining sensors.
+  %\item To achieve this and support the privileges introduced in the previous subsection, a lower-triangular form of $S^{1/2}$ is required, for which we will use the Cholesky decomposition. In this form, computing $S^{1/2}$ for a subset of sensors $1,...,j$, $j\leq n$ satisfies the following (equation showing that this matrix is the top left block matrix of the equivalent decomposition for all $n$ sensors).
   \item Now, an estimator of privilege $j$ (that holds the keys $sk_1,...,sk_j$, $j\leq n$), can correctly generate the noises for sensors $1,...,j$ by computing (give partial generation equation up to sensor $j$).
   \item The subset of computed noises can then be removed from received sensor measurements $z'_1,...,z'_j$ by subtracting it.
   
