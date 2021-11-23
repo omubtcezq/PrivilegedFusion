@@ -306,22 +306,15 @@ With \eqref{eqn:p_correlated_noises_generation}, at every timestep $k$, $\vec{g}
 % 
 
 \subsection{Measurement Modification}
-With a way to generate noises for sensors and estimators, we can introduce the means of measurement modification and the observable measurement models for different estimators.
-
-Measurement modification is peformed by adding noises $\vec{g}_k^{(N)}$ to measurements from each sensor $i$ before making them public, resulting in modified measurement equations for each sensor,
+With a way to generate noises for sensors and estimators, we can introduce the means of measurement modification and the observable measurement models for different estimators. Measurement modification is peformed by adding noises $\vec{g}_k^{(N)}$ to measurements from each sensor $i$ before making them public, resulting in modified measurement equations for each sensor,
 \begin{equation}
 \begin{split}
   \vec{y}_{k,i}^{(up)} &= \vec{y}_{k,i} + \vec{g}_{k,i}\\
   &= \mat{H}_{k,i}\vec{x}_k + \vec{v}_{k,i} + \vec{g}_{k,i}\,,
 \end{split}
 \end{equation}
-where $\vec{v}_{k,i}\sim\mathcal{N}(\vec{0},\mat{R}_{k,i})$ and $\left[\vec{g}_{k,1}\ \cdots\ \vec{g}_{k,N}\right]^\top\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S})$.
-
-
-
-
-As we assume that sensors are synchronised, we can capture the correlation between modified measurements exactly by considering the stacked measurement model for any privilege estimator $\mathsf{e}_{p,q}$ at time $k$,
-\begin{equation}
+with real measurement noise $\vec{v}_{k,i}\sim\mathcal{N}(\vec{0},\mat{R}_{k,i})$ and the vector of all added noises $\vec{g}_k^{(N)}\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S})$. As we assume that sensors are synchronised, we can capture the correlation between these modified measurements exactly by considering the stacked measurement model for any estmator with access to $q$ measurements, $\mathsf{e}_{p,q}$, at time $k$ given by
+\begin{equation}\label{eqn:measurement_equation}
   \vec{y}_k^{(q)} = \mat{H}_k^{(q)}\vec{x}_k + \vec{v}_k^{(q)} + \vec{g}_k^{(q)}
 \end{equation}
 where $\vec{v}_k^{(q)}\sim\mathcal{N}(\vec{0},\mat{R}_k^{(q)})$ and $\vec{g}_k^{(q)}\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S}^{(q)})$, with
@@ -355,19 +348,59 @@ where $\vec{v}_k^{(q)}\sim\mathcal{N}(\vec{0},\mat{R}_k^{(q)})$ and $\vec{g}_k^{
 \end{equation*}
 and $\mat{S}^{(q)} \in \mathbb{R}^{qm\times qm}$ is the top left block from the matrix $\mat{S}$, having the same form as \eqref{eqn:noise_correlation_matrix}.
 
+Since we are using a cryptographically sound stream cipher to generate the added Gaussian keystream, the pseudorandom samples are indistingishable from truly random ones to estimators without appropriate keys, which leads us to three observable measurement models for differing estimators.
+\begin{LaTeXdescription}
+  \item[Estimators of the form $\mathsf{e}_{0,q}$] Here, no keys are held by the unprivileged estimators and generated noise $\vec{g}_k^{(q)}$ is indistinguishable from noise from the truly random distribution $\mathcal{N}(\vec{0}, \mat{S}^{(q)})$. For these estimators, we can rewrite the measurement equation \eqref{eqn:measurement_equation} as the observed measurment equation
+  \begin{equation}
+    \vec{y}_k^{(0,q)} = \mat{H}_k^{(q)}\vec{x}_k + \vec{v}_k^{\prime(q)}\,,
+  \end{equation}
+  with new Gaussian noise term $\vec{v}_k^{\prime(q)} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(q)}+\mat{S}^{(q)})$.
+  
+  \item[Estimators of the form $\mathsf{e}_{p,p}$] Estimators with keys for all the sensors to which they have access can generate all added noise and subtract it from the recieved measurements. That is, $\vec{g}_k^{(p)}$ can be generated and $\vec{y}_k^{(p,p)}=\vec{y}_k^{(p)}-\vec{g}_k^{(p)}$ computed to give the observed measurement model equal to recieving unmodified measurements only,
+  \begin{equation}
+    \vec{y}_k^{(p,p)} = \mat{H}_k^{(p)}\vec{x}_k + \vec{v}_k^{(p)}\,,
+  \end{equation}
+  with $\vec{v}_k^{\prime(p)} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(p)}$.
+
+  \item[Estimators of the form $\mathsf{e}_{p,q}$, $p<q$] Lastly, we have the observed measurement model when only some accessible measurements can have have their noises removed. Here, care must be taken when deriving the model as noises from sensors $i>p$, which cannot be removed, are conditionally dependant on the known noises $\vec{g}_k^{(p)}$. 
+  
+  Since we can generate the noises $\vec{g}_k^{(p)}$ and know that $\vec{g}_k^{(q)}\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S}^{(q)})$, we can write 
+  \begin{equation}
+    \dots
+  \end{equation}
+  and compute the conditional Gaussian distribution
+  \begin{equation}
+    \begin{split}
+      &\left[\vec{g}_{k,p+1}\ \cdots\ \vec{g}_{k,q}\right]^\top \mid \vec{g}_k^{(p)}\\
+      &\qquad \sim \mathcal{N}()
+    \end{split}
+  \end{equation}
+
+  subtracting the known noises and ofsetting the mean of the unknown noises, these estimators can compute $\dots$ and result in the observed measurement model
+  \begin{equation}
+    \dots
+  \end{equation}
+  
+
+
+  % probably don't use the below part
+  If we let the vector capturing known noises be
+  \begin{equation}
+    \vec{g}_k^{(p,q)}=
+    \begin{bmatrix}
+      \vec{g}_k^{(p)} & \vec{0} & \cdots & \vec{0}
+    \end{bmatrix}^\top\,,
+  \end{equation}
+  such that $\vec{g}_k^{(p,q)} \in \mathbb{R}^{qm \times m}$, we can compute $\vec{y}_k^{(p,q)}=\vec{y}_k^{(q)}-\vec{g}_k^{(p,q)}$ which, when
+\end{LaTeXdescription}
 
 \begin{itemize}
-  %\item Similarly to the Gaussian keystream introduced earlier, pseudorandom standard normal samples can be correlated when transformed together even when generated using different keys.
-  %\item To capture a correlation between additive noises from each sensor, we introduce the fully correlated component $Z$ and the uncorrelated component $Y$ and given $n$ sensors we define the generated noise cross-correlation matrix as $S$ (give equation).
-  \item The generation of the additive noise can then be computed with $m$ standard normal pseudorandom samples generated from keys of each sensor with the following equation (using $S^{1/2}$) and added to the measurements at every timestep $k$ as follows (give measurements equation with two noises).
-  %\item In the equation above, computing $S^{1/2}$ requires more than the simpler requirement in single sensor pseudorandom Gaussian keystream ($S^{1/2}S^{1/2\top}=S)$), as the form of the matrix $S^{1/2}$ will affect which subsets of keys are sufficient for partially computing the correlated noises. That is, privileged estimators that only hold a subset of sensor keys should still be able to generate the correlated pseudorandom Gaussian keystream for the subset of sensors for which they hold keys, but not for the remaining sensors.
-  %\item To achieve this and support the privileges introduced in the previous subsection, a lower-triangular form of $S^{1/2}$ is required, for which we will use the Cholesky decomposition. In this form, computing $S^{1/2}$ for a subset of sensors $1,...,j$, $j\leq n$ satisfies the following (equation showing that this matrix is the top left block matrix of the equivalent decomposition for all $n$ sensors).
-  \item Now, an estimator of privilege $j$ (that holds the keys $sk_1,...,sk_j$, $j\leq n$), can correctly generate the noises for sensors $1,...,j$ by computing (give partial generation equation up to sensor $j$).
-  \item The subset of computed noises can then be removed from received sensor measurements $z'_1,...,z'_j$ by subtracting it.
+  %\item Now, an estimator of privilege $j$ (that holds the keys $sk_1,...,sk_j$, $j\leq n$), can correctly generate the noises for sensors $1,...,j$ by computing (give partial generation equation up to sensor $j$).
+  %\item The subset of computed noises can then be removed from received sensor measurements $z'_1,...,z'_j$ by subtracting it.
   
-  \item Since we are using a cryptographically sound stream cipher, pseudorandom Gaussian samples are indistinguishable from truly random ones to an estimator not holding any relevant keys. We can then consider three estimation problems.
-  \item First, an estimator with access to $j$ sensors and no keys (unprivileged estimator) will have measurements indistinguishable from those following the measurement model given by (model but with additional measurement noise $Y$ and $Z$).
-  \item Second, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ can remove all added pseudorandom noise from observable measurements and follows the measurement model given earlier exactly.
+  %\item Since we are using a cryptographically sound stream cipher, pseudorandom Gaussian samples are indistinguishable from truly random ones to an estimator not holding any relevant keys. We can then consider three estimation problems.
+  %\item First, an estimator with access to $j$ sensors and no keys (unprivileged estimator) will have measurements indistinguishable from those following the measurement model given by (model but with additional measurement noise $Y$ and $Z$).
+  %\item Second, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ can remove all added pseudorandom noise from observable measurements and follows the measurement model given earlier exactly.
   \item Lastly, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ as well as some additional $l$ remaining sensors. In this case, noises can be removed from the first $j$ measurements, while the remaining $l$ measurements have conditional Gaussian noise based on the first $j$ pseudorandom samples. This can be captured by the measurement equation (give slightly more complicated conditional measurement equation that will not have zero-mean noise).
   \item Intuitively, and from the measurement models observed for the different estimators above, we can tell that the parameters $Z$ and $Y$ will control the difference in estimation performance between estimators.
   \item More specifically, the fully correlated term $Z$ will control the difference in estimation between an unprivileged and privileged estimator, while the uncorrelated term $Y$ will control the difference in estimation between privileged estimators with and without access to additional measurements from sensors to which they do not hold keys.
