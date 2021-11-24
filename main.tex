@@ -98,11 +98,22 @@ In this work, we consider this definition of estimation privilege, presented in 
 
 In section \ref{sec:prob}, the multisensor estimation privilege problem is presented. Relevant preliminaries are introduced in section \ref{sec:prelim} and the estimation privilege fusion scheme itself in section \ref{sec:scheme}. A cryptographic analysis and the simulation results are then given in sections \ref{sec:crypto} and \ref{sec:sim}, respectively, before the concluding remarks in section \ref{sec:conc}.
 
+% 
+% ##    ##  #######  ########    ###    ######## ####  #######  ##    ## 
+% ###   ## ##     ##    ##      ## ##      ##     ##  ##     ## ###   ## 
+% ####  ## ##     ##    ##     ##   ##     ##     ##  ##     ## ####  ## 
+% ## ## ## ##     ##    ##    ##     ##    ##     ##  ##     ## ## ## ## 
+% ##  #### ##     ##    ##    #########    ##     ##  ##     ## ##  #### 
+% ##   ### ##     ##    ##    ##     ##    ##     ##  ##     ## ##   ### 
+% ##    ##  #######     ##    ##     ##    ##    ####  #######  ##    ## 
+% 
+
 \subsection{Notation}\label{subsec:notation}
 \begin{itemize}
   \item Matrices, vectors.
   \item Positive definitness.
   \item Diag function for normal and block vectors
+  \item Stacking notation $\vec{a}^{(n:m)}$
   \item Pseudorandom distribution.
   \item Estimator in cryptographic sense.
   \item Negligible fuction and negligible covariance.
@@ -350,63 +361,83 @@ and $\mat{S}^{(q)} \in \mathbb{R}^{qm\times qm}$ is the top left block from the 
 
 Since we are using a cryptographically sound stream cipher to generate the added Gaussian keystream, the pseudorandom samples are indistingishable from truly random ones to estimators without appropriate keys, which leads us to three observable measurement models for differing estimators.
 \begin{LaTeXdescription}
-  \item[Estimators of the form $\mathsf{e}_{0,q}$] Here, no keys are held by the unprivileged estimators and generated noise $\vec{g}_k^{(q)}$ is indistinguishable from noise from the truly random distribution $\mathcal{N}(\vec{0}, \mat{S}^{(q)})$. For these estimators, we can rewrite the measurement equation \eqref{eqn:measurement_equation} as the observed measurment equation
-  \begin{equation}
+  \item[Estimators of the form $\mathsf{e}_{0,q}$] Here, no keys are held by the unprivileged estimators and the generated noise $\vec{g}_k^{(q)}$ is indistinguishable from noise from the truly random distribution $\mathcal{N}(\vec{0}, \mat{S}^{(q)})$. For these estimators, we can rewrite the measurement equation \eqref{eqn:measurement_equation} as the observed measurment equation
+  \begin{equation}\label{eqn:0q_obs_measurement_model}
     \vec{y}_k^{(0,q)} = \mat{H}_k^{(q)}\vec{x}_k + \vec{v}_k^{\prime(q)}\,,
   \end{equation}
-  with new Gaussian noise term $\vec{v}_k^{\prime(q)} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(q)}+\mat{S}^{(q)})$.
+  with new truly Gaussian noise term $\vec{v}_k^{\prime(q)} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(q)}+\mat{S}^{(q)})$.
   
   \item[Estimators of the form $\mathsf{e}_{p,p}$] Estimators with keys for all the sensors to which they have access can generate all added noise and subtract it from the recieved measurements. That is, $\vec{g}_k^{(p)}$ can be generated and $\vec{y}_k^{(p,p)}=\vec{y}_k^{(p)}-\vec{g}_k^{(p)}$ computed to give the observed measurement model equal to recieving unmodified measurements only,
-  \begin{equation}
+  \begin{equation}\label{eqn:pp_obs_measurement_model}
     \vec{y}_k^{(p,p)} = \mat{H}_k^{(p)}\vec{x}_k + \vec{v}_k^{(p)}\,,
   \end{equation}
   with $\vec{v}_k^{\prime(p)} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(p)})$.
 
-  \item[Estimators of the form $\mathsf{e}_{p,q}$, $p<q$] Lastly, we have the observed measurement model when only some accessible measurements can have have their noises removed. Here, care must be taken when deriving the model as noises from sensors $i>p$, which cannot be removed, are conditionally dependant on the known noises $\vec{g}_k^{(p)}$. 
-  
-  Since we can generate the noises $\vec{g}_k^{(p)}$ and know that $\vec{g}_k^{(q)}\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S}^{(q)})$, we can write 
-  \begin{equation}
-    \dots
-  \end{equation}
-  and compute the conditional Gaussian distribution
+  \item[Estimators of the form $\mathsf{e}_{p,q}$, $p<q$] Lastly, we have the observed measurement model when only some accessible measurements can have have their noises removed. Here, care must be taken when deriving the model as noises from sensors $i>p$, which cannot be removed, are conditionally dependant on the known noises $\vec{g}_k^{(1:p)}$. Since we can generate the noises $\vec{g}_k^{(1:p)}$ and know that $\vec{g}_k^{(1:q)}\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S}^{(1:q)})$, we can write 
   \begin{equation}
     \begin{split}
-      &\left[\vec{g}_{k,p+1}\ \cdots\ \vec{g}_{k,q}\right]^\top \mid \vec{g}_k^{(p)}\\
-      &\qquad \sim \mathcal{N}()
+      &\vec{g}_k^{(1:q)}=
+      \begin{bmatrix}
+        \vec{g}_k^{(1:p)}\\
+        \vec{g}_k^{(p+1:q)}\\
+      \end{bmatrix}\\ 
+      &\qquad \dot{\sim}\ \mathcal{N}\left(
+      \begin{bmatrix}
+        \vec{0}\\
+        \vec{0}
+      \end{bmatrix},\mat{S}^{(1:q)}=
+      \begin{bmatrix}
+        \mat{S}^{(1:p)} & \mat{Z}^\prime\\
+        \mat{Z}^{\prime\top} & \mat{S}^{(p+1:q)}
+      \end{bmatrix}\right)\,,
     \end{split}
   \end{equation}
-
-  subtracting the known noises and ofsetting the mean of the unknown noises, these estimators can compute $\dots$ and result in the observed measurement model
+  where $\mat{Z}^\prime \in \mathbb{R}^{pm \times (q-p)m}$ is a block matrix with every element equal to $\mat{Z}$, and compute the conditional pseudorandom Gaussian distribution
   \begin{equation}
-    \dots
+    \begin{split}
+      &\vec{g}_k^{(p+1:q)} \mid \vec{g}_k^{(1:p)}\\
+      &\qquad \dot{\sim}\ \mathcal{N}\Big(\mat{Z}^{\prime\top}\mat{S}^{(1:p)-1}\vec{g}_k^{(1:p)},\\
+      &\qquad\qquad \mat{S}^{(p+1:q)} - \mat{Z}^{\prime\top}\mat{S}^{(1:p)-1}\mat{Z}^{\prime}\Big)\,.
+    \end{split}
   \end{equation}
-  
-
-
-  % probably don't use the below part
-  If we let the vector capturing known noises be
+  Now, subtracting the known noises $\vec{g}_k^{(1:p)}$ and unknown noises' means from recieved measurements,
   \begin{equation}
-    \vec{g}_k^{(p,q)}=
+    \vec{y}_k^{(p,q)}=\vec{y}_k^{(q)} - 
     \begin{bmatrix}
-      \vec{g}_k^{(p)} & \vec{0} & \cdots & \vec{0}
-    \end{bmatrix}^\top\,,
+      \vec{g}_k^{(1:p)}\\
+      \mat{Z}^{\prime\top}\mat{S}^{(1:p)-1}\vec{g}_k^{(1:p)}
+    \end{bmatrix}\,,
   \end{equation}
-  such that $\vec{g}_k^{(p,q)} \in \mathbb{R}^{qm \times m}$, we can compute $\vec{y}_k^{(p,q)}=\vec{y}_k^{(q)}-\vec{g}_k^{(p,q)}$ which, when
+  and accounting for unknown pseudorandom noises being indistinguishable from random, the exact observed measurement model is obtained, namely
+  \begin{equation}\label{eqn:pq_obs_measurement_model}
+    \vec{y}_k^{(p,q)} = \mat{H}_k^{(p)}\vec{x}_k + \vec{v}_k^{\prime(q)}
+  \end{equation}
+  where 
+  \begin{equation*}
+    \vec{v}_k^{\prime} \sim \mathcal{N}\left(\vec{0},
+    \begin{bmatrix}
+      \mat{R}_k^{(1:p)} & \mat{0}\\
+      \mat{0} & \mat{Z}^{\prime\top}\mat{S}^{(1:p)-1}\vec{g}_k^{(1:p)} + \mat{R}_k^{(p+1:q)}
+    \end{bmatrix}\right).
+  \end{equation*}
 \end{LaTeXdescription}
 
-\begin{itemize}
-  %\item Now, an estimator of privilege $j$ (that holds the keys $sk_1,...,sk_j$, $j\leq n$), can correctly generate the noises for sensors $1,...,j$ by computing (give partial generation equation up to sensor $j$).
-  %\item The subset of computed noises can then be removed from received sensor measurements $z'_1,...,z'_j$ by subtracting it.
-  
-  %\item Since we are using a cryptographically sound stream cipher, pseudorandom Gaussian samples are indistinguishable from truly random ones to an estimator not holding any relevant keys. We can then consider three estimation problems.
-  %\item First, an estimator with access to $j$ sensors and no keys (unprivileged estimator) will have measurements indistinguishable from those following the measurement model given by (model but with additional measurement noise $Y$ and $Z$).
-  %\item Second, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ can remove all added pseudorandom noise from observable measurements and follows the measurement model given earlier exactly.
-  \item Lastly, an estimator with privilege $j$ and access to the first $j$ sensors $1,...,j$ as well as some additional $l$ remaining sensors. In this case, noises can be removed from the first $j$ measurements, while the remaining $l$ measurements have conditional Gaussian noise based on the first $j$ pseudorandom samples. This can be captured by the measurement equation (give slightly more complicated conditional measurement equation that will not have zero-mean noise).
-  \item Intuitively, and from the measurement models observed for the different estimators above, we can tell that the parameters $Z$ and $Y$ will control the difference in estimation performance between estimators.
-  \item More specifically, the fully correlated term $Z$ will control the difference in estimation between an unprivileged and privileged estimator, while the uncorrelated term $Y$ will control the difference in estimation between privileged estimators with and without access to additional measurements from sensors to which they do not hold keys.
-  \item These two differences correspond to the two guarantees we want to show for the presented scheme (introduced in the problem formulation section).
-  \item The effects of choosing these parameters will be formally explored in the cryptography section.
-\end{itemize}
+From the observed measurement models \eqref{eqn:0q_obs_measurement_model}, \eqref{eqn:pp_obs_measurement_model} and \eqref{eqn:pq_obs_measurement_model} we can tell that the parameters $\mat{Z}$ and $\mat{Y}$ control the difference in estimation performance between the three mutually exclusive and exhaustive estimators. More specifically, while both components affect estimation, the fully correlated component $\mat{Z}$ predominantly affects the difference in estimation between estimators of the form $\mathsf{e}){0,q}$ and $\mathsf{e}){p,p}$, while the uncorrelated component $\mat{Y}$ affects the difference between estimators $\mathsf{e}){p,p}$ and $\mathsf{e}){p,q}$. These two differences exactly correspond to the difference that we want to guarantee cryptographically from section \ref{sec:prob}. The effects of choosing $mat{Z}$ and $\mat{Y}$ will be more formally explored in the cryptography and simulation sections, \ref{sec:crypto} and \ref{sec:sim}, respectively.
+
+% NOTE problem with notation. \mat{S} is the odd one out. (a:b) should denote stacking of item rather than subindexing. Alternative for S? Or perhaps a redefinition of S? S^(a) could be defined instead and S alone never used? Seems reasonable - all others will have a:b notation.
+% Modified noise v could have no (a) super script?
+% observed meausrments (p,q) could be [p.q] instead to distinguish from a:b better. This should be changed in (up) and (p) cryptographic notation earlier and perhaps the estimator e notation too.
+
+% 
+% ##    ##  #######  ####  ######  ########    ########  ####  ######  ######## 
+% ###   ## ##     ##  ##  ##    ## ##          ##     ##  ##  ##    ##    ##    
+% ####  ## ##     ##  ##  ##       ##          ##     ##  ##  ##          ##    
+% ## ## ## ##     ##  ##   ######  ######      ##     ##  ##   ######     ##    
+% ##  #### ##     ##  ##        ## ##          ##     ##  ##        ##    ##    
+% ##   ### ##     ##  ##  ##    ## ##          ##     ##  ##  ##    ##    ##    
+% ##    ##  #######  ####  ######  ########    ########  ####  ######     ##    
+% 
+
 \subsection{Noise Distribution}\label{subsec:noise_dist}
 \begin{itemize}
   \item While we have described a method for generating noise for $n$ sensors such that different estimators observe different measurement models being followed, we have not discussed where noise is generated and how it is distributed to the relevant sensors.
@@ -438,6 +469,7 @@ Since we are using a cryptographically sound stream cipher to generate the added
   \item We consider two types of unprivileged estimation which we want to bound, namely estimators holding no keys and estimators holding only a subset of keys, as specified in the desired guarantees.
 \end{itemize}
 
+% Or should this be called Different keys as above?
 \subsection{Unprivileged Adversaries}\label{subsec:crypto_unprivileged}
 \begin{itemize}
   \item If we assume an unprivileged estimator can access all $n$ sensors, then their stacked estimation model can be described by the appropriate equation at each timestep $k$. 
@@ -450,6 +482,7 @@ Since we are using a cryptographically sound stream cipher to generate the added
   \item In the above, we assume the unprivileged estimator has access to all $n$ sensors, while the $j$ privilege estimator has access to only the first $j$ sensors. In the case when the unprivileged estimator has access to fewer sensors or the privileged one to more, their difference in estimation can only increase, thus keeping the computed lower-bound a lower-bound and the cryptographic guarantee does not change (albeit the definitions of Setup and Noise will, to capture the now available sets of measurements).
 \end{itemize}
 
+% Same keys - see comment before previous subsection
 \subsection{Privileged Adversaries}\label{subsec:crypto_privileged}
 \begin{itemize}
   \item We can use a similar approach to separately guarantee the largest possible benefit in estimation available to an estimator of privilege $j$ (access to first $j$ keys) when fusing measurements from sensors to which they do not hold keys to get a better state estimate.
