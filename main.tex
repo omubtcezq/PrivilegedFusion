@@ -144,12 +144,12 @@ with white noise term $\vec{w}_k \sim \mathcal{N}(\vec{0},\mat{Q}_k)$ and a know
 \end{equation}
 with white noise term $\vec{v}_{k,i} \sim \mathcal{N}(\vec{0},\mat{R}_{k,i})$ and a known covariance $\mat{R}_{k,i} \in \mathbb{R}^{m \times m}$. In addition to these models, we assume that all sensors $i$ are synchronised in timesteps $k$ to simplify later cryptographic evaluation. In practice, this would restrict the presented schemes to scenarios where synchronisation is easier to guarantee, such as ones where measurements are taken infrequently.
 
-Each of the sensors also holds a secret key $\mathsf{sk}_i$, which can be made available to estimators of appropriate privilege. The privileges that we consider, in terms of access to keys and measurements, will be defined by sequential sensors. That is, in the presence of $N$ sensors, we consider exactly $N$ possible privilege levels, where each privilege $p>0$ corresponds to holding the sequential secret keys $\mathsf{sk}_j$, $1\leq j \leq p$ while being unprivileged, $p=0$, corresponds to holding none. We assume that estimators have access to all ``privileged measurements'', those from sensors whose keys they hold, and can additionally fuse ``unprivileged measurements'' from those whose keys they do not hold. We can therefore capture their capabilities by letting $\mathsf{e}_{p,q}$ denote an estimator with privilege $p$ and access to measurements from $q\geq p$ sensors, $1\leq i \leq q$.
+Each of the sensors also holds a secret key $\mathsf{sk}_i$, which can be made available to estimators of appropriate privilege. The privileges that we consider, in terms of access to keys and measurements, will be defined by sequential sensors. That is, in the presence of $N$ sensors, we consider exactly $N$ possible privilege levels, where each privilege $p>0$ corresponds to holding the sequential secret keys $\mathsf{sk}_j$, $1\leq j \leq p$ while being unprivileged, $p=0$, corresponds to holding none. We assume that estimators have access to all ``privileged measurements'', those from sensors whose keys they hold, and can additionally fuse ``unprivileged measurements'' from those whose keys they do not hold. We can therefore capture their capabilities by letting $\mathsf{e}^{[p,q]}$ denote an estimator with privilege $p$ and access to measurements from $q\geq p$ sensors, $1\leq i \leq q$.
 
 To cryptographically guarantee the difference between estimation performances, we will use the notion of covariance privilege introduced in \cite{risticCryptographicallyPrivilegedState2022} and given in section \ref{sec:prelim}. As we want better performance for higher privilege estimators as well as to limit the gained performance from fusing unprivileged measurements, two differences will be considered.
 \begin{LaTeXdescription}
-  \item[Different Keys] First, we want to guarantee a lower bound on the difference between the best unprivileged estimator $\mathsf{e}_{0,N}$ and the best privilege-$p$ estimator $\mathsf{e}_{p,p}$. This will, therefore, remain a lower-bound when unprivileged estimators have access to fewer unprivileged measurements or privileged estimators have access to more.
-  \item[Same Keys] Second, we want to guarantee an upper bound on the difference between the best privilege-$p$ estimators $\mathsf{e}_{p,p}$ and $\mathsf{e}_{p,N}$. Here, the bound remains an upper bound on the gained estimation performance of any privilege-$p$ estimator fusing additional unprivileged measurements.
+  \item[Different Keys] First, we want to guarantee a lower bound on the difference between the best unprivileged estimator $\mathsf{e}^{[0,N]}$ and the best privilege-$p$ estimator $\mathsf{e}^{[p,p]}$. This will, therefore, remain a lower-bound when unprivileged estimators have access to fewer unprivileged measurements or privileged estimators have access to more.
+  \item[Same Keys] Second, we want to guarantee an upper bound on the difference between the best privilege-$p$ estimators $\mathsf{e}^{[p,p]}$ and $\mathsf{e}^{[p,N]}$. Here, the bound remains an upper bound on the gained estimation performance of any privilege-$p$ estimator fusing additional unprivileged measurements.
 \end{LaTeXdescription}
 The resulting scheme should be such that two parameters are responsible for choosing the values of these two bounds.
 
@@ -181,28 +181,28 @@ When defining our scheme and discussing its cryptographic guarantees, we will ma
 % 
 
 \subsection{Gaussian keystreams}\label{subsec:gauss_keystreams}
-A Gaussian keystream is a sequence of pseudorandom multivariate Gaussian samples $\vec{g}_k\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S})$, $k>0$, for some covariance matrix $\mat{S}$, generated using a secret key. The sequence is indistinguishable from a truly random multivariate Gaussian sequence to any observer who does not hold the key while being reproducible exactly by those that do. The keystream can be constructed from a typical cryptographic stream cipher \cite[Ch. 3.6]{katzIntroductionModernCryptography2008}, by using any common method for random floating-point generation \cite{goualardGeneratingRandomFloatingPoint2020} to create a stream of pseudorandom uniform samples $u_i\ \dot{\sim}\ \mathcal{U}(0,1)$, $i>0$. Here, we make the assumption that floating-point representations of real numbers are sufficiently similar to actual real numbers, made reasonable in practice due to the insignificance of their difference in many applications and their prevalence in estimation theory.
+A Gaussian keystream is a sequence of pseudorandom multivariate Gaussian samples $\vec{g}_k\in\mathbb{R}^m\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S})$, $k>0$, for some covariance matrix $\mat{S}$, generated using a secret key. The sequence is indistinguishable from a truly random multivariate Gaussian sequence to any observer who does not hold the key while being reproducible exactly by those that do. The keystream can be constructed from a typical cryptographic stream cipher \cite[Ch. 3.6]{katzIntroductionModernCryptography2008}, by using any common method for random floating-point generation \cite{goualardGeneratingRandomFloatingPoint2020} to create a stream of pseudorandom uniform samples $u_x\ \dot{\sim}\ \mathcal{U}(0,1)$, $x>0$. Here, we make the assumption that floating-point representations of real numbers are sufficiently similar to actual real numbers, made reasonable in practice due to the insignificance of their difference in many applications and their prevalence in estimation theory.
 
-To construct the Gaussian keystream $\vec{g}_k$, $k>0$, from the uniform one $u_i$, $i>0$, a vector of uncorrelated standard Gaussian samples $\vec{z}_k$ is first generated using the Box-Muller transform,
+To construct the Gaussian keystream $\vec{g}_k$, $k>0$, from the uniform one $u_x$, $x>0$, a vector of uncorrelated standard Gaussian samples $\vec{z}_k$ is first generated using the Box-Muller transform,
 \begin{equation}\label{eqn:standard_gaussian_generation}
     \vec{z}_k = 
   \begin{bmatrix}
-    z_{(k-1)n+1} & \cdots & z_{kn}
+    z_{(k-1)m+1} & \cdots & z_{km}
   \end{bmatrix}^\top
 \end{equation}
 where 
 \begin{equation*}
-  z_i =
+  z_x =
   \begin{cases}
-    \sqrt{-2\ln(u_{2i})}\cos(2\pi u_{2i+1}), & i \text{ is odd}\\
-    \sqrt{-2\ln(u_{2i})}\sin(2\pi u_{2i+1}), & i \text{ is even}\\
+    \sqrt{-2\ln(u_{2x})}\cos(2\pi u_{2x+1}), & x \text{ is odd}\\
+    \sqrt{-2\ln(u_{2x})}\sin(2\pi u_{2x+1}), & x \text{ is even}\\
   \end{cases}\,,
 \end{equation*}
 and then correlated by
 \begin{equation}\label{eqn:gaussian_keystream_generation}
-    \vec{g}_k = \mat{A}\vec{z}_k\,,
+    \vec{g}_k = \mat{S}^\frac{1}{2}\vec{z}_k\,,
 \end{equation}
-where $\mat{A}$ is any matrix such that $\mat{A}\mat{A}^\top = \mat{S}$.
+where $\mat{S}^\frac{1}{2}$ is any matrix such that $\mat{S}^\frac{1}{2}\mat{S}^{\frac{1}{2}\top} = \mat{S}$.
 
 % 
 % ########  ########  #### ##     ##    ########  ######## ######## 
@@ -219,20 +219,21 @@ The formal definition of a privileged estimation scheme and accompanying notion 
 A privileged estimation scheme is defined by a pair of probabilistic algorithms $(\mathsf{Setup}, \mathsf{Noise})$:
 \begin{LaTeXdescription}
   \item[$\mathsf{Setup}(\mathcal{M}_S,\mathcal{M}_M,\kappa)$] Given system and measurement models $\mathcal{M}_S$ and $\mathcal{M}_M$, and the security parameter $\kappa$, public parameters $\mathsf{pub}$ and a secrect key $\mathsf{sk}$ are returned.
-  \item[$\mathsf{Noise}(\mathsf{pub},\mathsf{sk},k,\mathcal{M}_S,\mathcal{M}_M,\vec{y}_1,\dots,\vec{y}_k)$] Given public parameters $\mathsf{pub}$, secret key $\mathsf{sk}$, timestep $k$, models $\mathcal{M}_S$ and $\mathcal{M}_M$, and measurements $\vec{y}_1,\dots,\vec{y}_k$, modified privileged and unprivileged measurements, $\vec{y}^{(p)}_k$ and $\vec{y}^{(up)}_k$, respectively, are returned.
+  \item[$\mathsf{Noise}(\mathsf{pub},\mathsf{sk},k,\mathcal{M}_S,\mathcal{M}_M,\vec{y}_1,\dots,\vec{y}_k)$] Given public parameters $\mathsf{pub}$, secret key $\mathsf{sk}$, timestep $k$, models $\mathcal{M}_S$ and $\mathcal{M}_M$, and measurements $\vec{y}_1,\dots,\vec{y}_k$, modified privileged and unprivileged measurements, $\vec{y}^{[p]}_k$ and $\vec{y}^{[up]}_k$, respectively, are returned.
 \end{LaTeXdescription}
 Using the defintions from \cite{risticCryptographicallyPrivilegedState2022} for an \textit{estimator} and \textit{negligible covariance} $\mathsf{neglCov}_m(\kappa)$, the notion of covariance privilege is defined as follows.
 \begin{definition}
   A privileged estimation scheme meets notion \textit{$\{\mat{D}_1,\mat{D}_2,\dots\}$-Covariance Privilege for Models $\mathcal{M}_S$ and $\mathcal{M}_M$} if for any PPT estimator $\mathcal{A}$, there exists a PPT estimator $\mathcal{A}^\prime$, such that
   \begin{equation}\label{eqn:cov_priv_security_notion}
     \begin{split}
-      &\mathsf{Cov}\left[\mathcal{A}\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{(up)}_1,\dots,\vec{y}^{(up)}_k\right) - \vec{x}_k\right]\\
-      &-\mathsf{Cov}\left[\mathcal{A}^\prime\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{(p)}_1,\dots,\vec{y}^{(p)}_k\right) - \vec{x}_k\right]\\
+      &\mathsf{Cov}\left[\mathcal{A}\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{[up]}_1,\dots,\vec{y}^{[up]}_k\right) - \vec{x}_k\right]\\
+      &-\mathsf{Cov}\left[\mathcal{A}^\prime\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{[p]}_1,\dots,\vec{y}^{[p]}_k\right) - \vec{x}_k\right]\\
       &\quad\succeq \mat{D}_k - \mathsf{neglCov}_m(\kappa)
     \end{split}
   \end{equation}
   for all $k>0$, some negligible covariance and where matrices $\mat{D}_k$ are definite, \textit{i.e.}, $\mat{D}_k \preceq \mat{0}$ or $\mat{D}_k \succeq \mat{0}$. Here, $\mathcal{A}$ and $\mathcal{A}^\prime$ are running in polynomial-time with respect to the parameter $\kappa$ and all probabilities are taken over randomness introduced in models $\mathcal{M}_S$ and $\mathcal{M}_M$, estimators $\mathcal{A}$ and $\mathcal{A}^\prime$, and algorithms $\mathsf{Setup}$ and $\mathsf{Noise}$.
 \end{definition}
+
 We note that in the generalised notion \eqref{eqn:cov_priv_security_notion}, $\mat{D}_k\preceq \mat{0}$ is allowed, and unprivileged estimators may now perform better than privileged ones, albeit by a bounded amount. This feature will be useful when discussing additional estimation performance gainable from fusing unprivileged measurements. Lastly, a sign is also corrected, such that negligible covariances are subtracted (rather than added), correctly capturing the additional negligible performance gainable by an unprivileged estimator.
 
 % 
@@ -263,9 +264,9 @@ The idea behind our privileged estimation fusion scheme is to add \textit{correl
 % 
 
 \subsection{Noise Generation}\label{subsec:noise_gen}
-Similarly to the Gaussian keystream generation in \eqref{eqn:gaussian_keystream_generation}, pseudorandom samples can be correlated in this way even when generated using different stream cipher keys. To parameterise the correlation between noises at each sensor, we introduce a fully correlated component $\mat{Z}\in\mathbb{R}^{m\times m}$ and an uncorrelated component $\mat{Y}\in\mathbb{R}^{m\times m}$ and define a noise cross-correlation matrix for $N$ sensors, $\mat{S} \in \mathbb{R}^{Nm\times Nm}$, as
+Similarly to the Gaussian keystream generation in \eqref{eqn:gaussian_keystream_generation}, pseudorandom samples can be correlated in this way even when generated using different stream cipher keys. To parameterise the correlation between noises at each sensor, we introduce a fully correlated component $\mat{Z}\in\mathbb{R}^{m\times m}$ and an uncorrelated component $\mat{Y}\in\mathbb{R}^{m\times m}$ and define a noise cross-correlation matrix for $x$ noises as $\mat{S}^{(x)} \in \mathbb{R}^{xm\times xm}$,
 \begin{equation}\label{eqn:noise_correlation_matrix}
-  \mat{S}=
+  \mat{S}^{(x)}=
   \begin{bmatrix}
     \mat{Z} & \cdots & \mat{Z}\\
     \vdots & \ddots & \vdots\\
@@ -277,34 +278,34 @@ Similarly to the Gaussian keystream generation in \eqref{eqn:gaussian_keystream_
     \mat{Y}\\
   \end{bmatrix}\right)\,.
 \end{equation}
-The generation of all $N$ Gaussian noises at timestep $k$, $\vec{g}_k^{(N)}$, can now be written as
+The generation of all $N$ multivariate Gaussian noises at timestep $k$, $\vec{g}_k^{(1:N)}$, can now be written as
 \begin{equation}\label{eqn:all_correlated_noises_generation}
-  \vec{g}_k^{(N)}=
+  \vec{g}_k^{(1:N)}=
   \begin{bmatrix}
     \vec{g}_{k,1}\\
     \vdots\\
     \vec{g}_{k,N}
   \end{bmatrix}=
-  \mat{S}^\frac{1}{2}\cdot
+  \mat{S}^{(N)\frac{1}{2}}\cdot
   \begin{bmatrix}
     \vec{z}_{k,1}\\
     \vdots\\
     \vec{z}_{k,N}
   \end{bmatrix}\,,
 \end{equation}
-where each $\vec{z}_{k,i}$ is first computed as $\vec{z}_k$ in \eqref{eqn:standard_gaussian_generation}, using uniform samples generated with cipher key $\mathsf{sk}_i$, and $\mat{S}^\frac{1}{2}$ is a matrix such that $\mat{S}^\frac{1}{2}\mat{S}^{\frac{1}{2}\top}=\mat{S}$. Notably, it is important that the first $p$ noises $\vec{g}_{k,1},\dots,\vec{g}_{k,p}$ in \eqref{eqn:all_correlated_noises_generation}, denoted $\vec{g}_k^{(p)}$, can be reproduced by an estimator of privilege $p$, holding only the keys $\mathsf{sk}_i$, $1\leq i \leq p$. When $\mat{S}^\frac{1}{2}$ is a lower-triangular matrix, as is the case when using the Cholesky decomposition of $\mat{S}$, each correlated Gaussian sample $\vec{g}_{k,i}$ is computable from preceeding uniform samples only, $\vec{z}_{k,j}$, $j\leq i$. Then, the generalised noise generation equation
+where each $\vec{z}_{k,i}$ is computed as $\vec{z}_k$ in \eqref{eqn:standard_gaussian_generation} using uniform samples generated with key $\mathsf{sk}_i$, and $\mat{S}^{(N)\frac{1}{2}}$ is a matrix such that $\mat{S}^{(N)\frac{1}{2}}\mat{S}^{(N)\frac{1}{2}\top}=\mat{S}^{(N)}$. Notably, it is important that the first $p$ noises $\vec{g}_{k,i}$, $1\leq i \leq p$, in \eqref{eqn:all_correlated_noises_generation}, denoted $\vec{g}_k^{(1:p)}$, can be reproduced by an estimator of privilege $p$, holding only the keys $\mathsf{sk}_i$, $1\leq i \leq p$. One case where this is possible is when a lower-triangular decomposition, such as the the Cholesky decomposition, is used to compute $\mat{S}^{(x)\frac{1}{2}}$ from $\mat{S}^{(x)}$. Here, each correlated Gaussian sample $\vec{g}_{k,i}$ is computable from preceeding uniform samples $\vec{z}_{k,j}$, $j\leq i$ only and the generalised noise generation equation
 \begin{equation}\label{eqn:p_correlated_noises_generation}
-  \vec{g}_k^{(p)}=
-  \mat{S}^{\frac{1}{2}(p)}\cdot
+  \vec{g}_k^{(1:p)}=
+  \mat{S}^{(p)\frac{1}{2}}\cdot
   \begin{bmatrix}
     \vec{z}_{k,1}\\
     \vdots\\
     \vec{z}_{k,p}
   \end{bmatrix}\,,
 \end{equation}
-where $\mat{S}^{\frac{1}{2}(p)}\in\mathbb{R}^{pm\times pm}$ is the top left block from the lower-triangular matrix $\mat{S}^\frac{1}{2}$, can be used to generate the same first $p$ noises $\vec{g}_k^{(p)}$ as would be obtained from \eqref{eqn:all_correlated_noises_generation}.
+generates the same first $p$ noises $\vec{g}_k^{(1:p)}$ as would be obtained from \eqref{eqn:all_correlated_noises_generation} since $\mat{S}^{(p)\frac{1}{2}}\in\mathbb{R}^{pm\times pm}$ is the top left block from $\mat{S}^{(N)\frac{1}{2}}$ when using the Cholesky decomposition.
 
-With \eqref{eqn:p_correlated_noises_generation}, at every timestep $k$, $\vec{g}_k^{(N)}$ can be generated using all $N$ keys and used to modify sensor measurements, while the subset $\vec{g}_k^{(p)}$ can be generated by estimators of privilege $p$ using the only keys they hold.
+With \eqref{eqn:p_correlated_noises_generation}, at every timestep $k$, $\vec{g}_k^{(1:N)}$ can be generated using all $N$ keys and used to modify sensor measurements, while the subset $\vec{g}_k^{(1:p)}$ can be generated by estimators of privilege $p$ using the only keys they hold.
 
 % 
 % ##     ##  #######  ########  ######## ##          ##     ##  #######  ########  
@@ -317,32 +318,32 @@ With \eqref{eqn:p_correlated_noises_generation}, at every timestep $k$, $\vec{g}
 % 
 
 \subsection{Measurement Modification}
-With a way to generate noises for sensors and estimators, we can introduce the means of measurement modification and the observable measurement models for different estimators. Measurement modification is peformed by adding noises $\vec{g}_k^{(N)}$ to measurements from each sensor $i$ before making them public, resulting in modified measurement equations for each sensor,
+With a way to generate noises for sensors and estimators, we can introduce the means of measurement modification and the observable measurement models for different estimators. Measurement modification is peformed by adding noises $\vec{g}_k^{(1:N)}$ to measurements from each sensor $i$ before making them public, resulting in modified measurement equations for each sensor,
 \begin{equation}
 \begin{split}
-  \vec{y}_{k,i}^{(up)} &= \vec{y}_{k,i} + \vec{g}_{k,i}\\
+  \vec{y}_{k,i}^\prime &= \vec{y}_{k,i} + \vec{g}_{k,i}\\
   &= \mat{H}_{k,i}\vec{x}_k + \vec{v}_{k,i} + \vec{g}_{k,i}\,,
 \end{split}
 \end{equation}
-with real measurement noise $\vec{v}_{k,i}\sim\mathcal{N}(\vec{0},\mat{R}_{k,i})$ and the vector of all added noises $\vec{g}_k^{(N)}\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S})$. As we assume that sensors are synchronised, we can capture the correlation between these modified measurements exactly by considering the stacked measurement model for any estmator with access to $q$ measurements, $\mathsf{e}_{p,q}$, at time $k$ given by
+with real measurement noise $\vec{v}_{k,i}\sim\mathcal{N}(\vec{0},\mat{R}_{k,i})$ and the vector of all added noises $\vec{g}_k^{(1:N)}\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S}^{(N)})$. As we assume that sensors are synchronised, we can capture the correlation between these modified measurements exactly by considering the stacked measurement model for any estmator with access to $q$ measurements, $\mathsf{e}^{[p,q]}$, at time $k$, given by
 \begin{equation}\label{eqn:measurement_equation}
-  \vec{y}_k^{(q)} = \mat{H}_k^{(q)}\vec{x}_k + \vec{v}_k^{(q)} + \vec{g}_k^{(q)}
+  \vec{y}_k^{(1:q)} = \mat{H}_k^{(1:q)}\vec{x}_k + \vec{v}_k^{(1:q)} + \vec{g}_k^{(1:q)}
 \end{equation}
-where $\vec{v}_k^{(q)}\sim\mathcal{N}(\vec{0},\mat{R}_k^{(q)})$ and $\vec{g}_k^{(q)}\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S}^{(q)})$, with
+where $\vec{v}_k^{(1:q)}\sim\mathcal{N}(\vec{0},\mat{R}_k^{(1:q)})$ and $\vec{g}_k^{(1:q)}\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S}^{(q)})$, with
 \begin{equation*}
-  \vec{y}_k^{(q)}=
+  \vec{y}_k^{(1:q)}=
   \begin{bmatrix}
-    \vec{y}_{k,1}\\
+    \vec{y}_{k,1}^\prime\\
     \vdots\\
-    \vec{y}_{k,q}
+    \vec{y}_{k,q}^\prime
   \end{bmatrix},\ 
-  \mat{H}_k^{(q)}=
+  \mat{H}_k^{(1:q)}=
   \begin{bmatrix}
     \mat{H}_{k,1}\\
     \vdots\\
     \mat{H}_{k,q}\\
   \end{bmatrix}, \
-  \vec{v}_k^{(q)}=
+  \vec{v}_k^{(1:q)}=
   \begin{bmatrix}
     \vec{v}_{k,1}\\
     \vdots\\
@@ -350,30 +351,30 @@ where $\vec{v}_k^{(q)}\sim\mathcal{N}(\vec{0},\mat{R}_k^{(q)})$ and $\vec{g}_k^{
   \end{bmatrix}\,,
 \end{equation*}
 \begin{equation*}
-  \mat{R}_k^{(q)}=\mathsf{diag}\left(
+  \mat{R}_k^{(1:q)}=\mathsf{diag}\left(
     \begin{bmatrix}
       \mat{R}_{k,1}\\
       \vdots\\
       \mat{R}_{k,q}
     \end{bmatrix}\right)\,
 \end{equation*}
-and $\mat{S}^{(q)} \in \mathbb{R}^{qm\times qm}$ is the top left block from the matrix $\mat{S}$, having the same form as \eqref{eqn:noise_correlation_matrix}.
+and $\mat{S}^{(q)} \in \mathbb{R}^{qm\times qm}$ defined by \eqref{eqn:noise_correlation_matrix}.
 
 Since we are using a cryptographically sound stream cipher to generate the added Gaussian keystream, the pseudorandom samples are indistingishable from truly random ones to estimators without appropriate keys, which leads us to three observable measurement models for differing estimators.
 \begin{LaTeXdescription}
-  \item[Estimators of the form $\mathsf{e}_{0,q}$] Here, no keys are held by the unprivileged estimators and the generated noise $\vec{g}_k^{(q)}$ is indistinguishable from noise from the truly random distribution $\mathcal{N}(\vec{0}, \mat{S}^{(q)})$. For these estimators, we can rewrite the measurement equation \eqref{eqn:measurement_equation} as the observed measurment equation
+  \item[Estimators of the form $\mathsf{e}^{[0,q]}$] Here, no keys are held by the unprivileged estimators and the generated noise $\vec{g}_k^{(1:q)}$ is indistinguishable from noise from the truly random distribution $\mathcal{N}(\vec{0}, \mat{S}^{(q)})$. For these estimators, we can rewrite the measurement equation \eqref{eqn:measurement_equation} as the observed measurment equation
   \begin{equation}\label{eqn:0q_obs_measurement_model}
-    \vec{y}_k^{(0,q)} = \mat{H}_k^{(q)}\vec{x}_k + \vec{v}_k^{\prime(q)}\,,
+    \vec{y}_k^{[0,q]} = \mat{H}_k^{(1:q)}\vec{x}_k + \vec{v}_k^{\prime}\,,
   \end{equation}
-  with new truly Gaussian noise term $\vec{v}_k^{\prime(q)} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(q)}+\mat{S}^{(q)})$.
+  with truly Gaussian term $\vec{v}_k^{\prime} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(1:q)}+\mat{S}^{(q)})$.
   
-  \item[Estimators of the form $\mathsf{e}_{p,p}$] Estimators with keys for all the sensors to which they have access can generate all added noise and subtract it from the recieved measurements. That is, $\vec{g}_k^{(p)}$ can be generated and $\vec{y}_k^{(p,p)}=\vec{y}_k^{(p)}-\vec{g}_k^{(p)}$ computed to give the observed measurement model equal to recieving unmodified measurements only,
+  \item[Estimators of the form $\mathsf{e}^{[p,p]}$] Estimators with keys for all the sensors to which they have access can generate all added noises and subtract them from the recieved measurements. That is, $\vec{g}_k^{(1:p)}$ can be generated and $\vec{y}_k^{[p,p]}=\vec{y}_k^{(1:p)}-\vec{g}_k^{(1:p)}$ computed to give the observed measurement model equal to recieving unmodified measurements only,
   \begin{equation}\label{eqn:pp_obs_measurement_model}
-    \vec{y}_k^{(p,p)} = \mat{H}_k^{(p)}\vec{x}_k + \vec{v}_k^{(p)}\,,
+    \vec{y}_k^{[p,p]} = \mat{H}_k^{(1:p)}\vec{x}_k + \vec{v}_k^{(1:p)}\,,
   \end{equation}
-  with $\vec{v}_k^{\prime(p)} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(p)})$.
+  where $\vec{v}_k^{(1:p)} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(1:p)})$.
 
-  \item[Estimators of the form $\mathsf{e}_{p,q}$, $p<q$] Lastly, we have the observed measurement model when only some accessible measurements can have have their noises removed. Here, care must be taken when deriving the model as noises from sensors $i>p$, which cannot be removed, are conditionally dependant on the known noises $\vec{g}_k^{(1:p)}$. Since we can generate the noises $\vec{g}_k^{(1:p)}$ and know that $\vec{g}_k^{(1:q)}\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S}^{(1:q)})$, we can write 
+  \item[Estimators of the form $\mathsf{e}^{[p,q]}$, $p<q$] Lastly, we have the observed measurement model when only some accessible measurements can have have their noises removed. Here, care must be taken when giving the observed model as noises from sensors $i>p$, which cannot be removed, are conditionally dependant on the known noises $\vec{g}_k^{(1:p)}$. Since we can generate the noises $\vec{g}_k^{(1:p)}$ and know that $\vec{g}_k^{(1:q)}\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S}^{(q)})$, we can write 
   \begin{equation}
     \begin{split}
       &\vec{g}_k^{(1:q)}=
@@ -385,48 +386,47 @@ Since we are using a cryptographically sound stream cipher to generate the added
       \begin{bmatrix}
         \vec{0}\\
         \vec{0}
-      \end{bmatrix},\mat{S}^{(1:q)}=
+      \end{bmatrix},\mat{S}^{(q)}=
       \begin{bmatrix}
-        \mat{S}^{(1:p)} & \mat{Z}^\prime\\
-        \mat{Z}^{\prime\top} & \mat{S}^{(p+1:q)}
+        \mat{S}^{(p)} & \mat{Z}^\prime\\
+        \mat{Z}^{\prime\top} & \mat{S}^{(q-p)}
       \end{bmatrix}\right)\,,
     \end{split}
   \end{equation}
   where $\mat{Z}^\prime \in \mathbb{R}^{pm \times (q-p)m}$ is a block matrix with every element equal to $\mat{Z}$, and compute the conditional pseudorandom Gaussian distribution
-  \begin{equation}
+  \begin{equation}\label{eqn:conditional_noise_distribution}
     \begin{split}
       &\vec{g}_k^{(p+1:q)} \mid \vec{g}_k^{(1:p)}\\
-      &\qquad \dot{\sim}\ \mathcal{N}\Big(\mat{Z}^{\prime\top}\mat{S}^{(1:p)-1}\vec{g}_k^{(1:p)},\\
-      &\qquad\qquad \mat{S}^{(p+1:q)} - \mat{Z}^{\prime\top}\mat{S}^{(1:p)-1}\mat{Z}^{\prime}\Big)\,.
+      &\qquad \dot{\sim}\ \mathcal{N}\Big(\mat{Z}^{\prime\top}\mat{S}^{(p)-1}\vec{g}_k^{(1:p)},\\
+      &\qquad\qquad \mat{S}^{(q-p)} - \mat{Z}^{\prime\top}\mat{S}^{(p)-1}\mat{Z}^{\prime}\Big)\,.
     \end{split}
   \end{equation}
-  Now, subtracting the known noises $\vec{g}_k^{(1:p)}$ and unknown noises' means from recieved measurements,
+  Now, subtracting the known noises $\vec{g}_k^{(1:p)}$ and the means of unkonwn noises, in \eqref{eqn:conditional_noise_distribution}, from the recieved measurements gives
   \begin{equation}
-    \vec{y}_k^{(p,q)}=\vec{y}_k^{(q)} - 
+    \vec{y}_k^{[p,q]}=\vec{y}_k^{(1:q)} - 
     \begin{bmatrix}
       \vec{g}_k^{(1:p)}\\
-      \mat{Z}^{\prime\top}\mat{S}^{(1:p)-1}\vec{g}_k^{(1:p)}
+      \mat{Z}^{\prime\top}\mat{S}^{(p)-1}\vec{g}_k^{(1:p)}
     \end{bmatrix}\,,
   \end{equation}
-  and accounting for unknown pseudorandom noises being indistinguishable from random, the exact observed measurement model is obtained, namely
+  and accounting for unknown pseudorandom noises being indistinguishable from random, the exact observed measurement model can be written as
   \begin{equation}\label{eqn:pq_obs_measurement_model}
-    \vec{y}_k^{(p,q)} = \mat{H}_k^{(p)}\vec{x}_k + \vec{v}_k^{\prime(q)}
+    \vec{y}_k^{[p,q]} = \mat{H}_k^{(1:q)}\vec{x}_k + \vec{v}_k^{\prime}
   \end{equation}
   where 
   \begin{equation*}
-    \vec{v}_k^{\prime} \sim \mathcal{N}\left(\vec{0},
-    \begin{bmatrix}
-      \mat{R}_k^{(1:p)} & \mat{0}\\
-      \mat{0} & \mat{Z}^{\prime\top}\mat{S}^{(1:p)-1}\vec{g}_k^{(1:p)} + \mat{R}_k^{(p+1:q)}
-    \end{bmatrix}\right).
+    \begin{split}
+      &\vec{v}_k^{\prime} \sim \mathcal{N}\Bigg(\vec{0},\\
+      &\qquad 
+      \begin{bmatrix}
+        \mat{R}_k^{(1:p)} & \mat{0}\\
+        \mat{0} & \mat{S}^{(q-p)} - \mat{Z}^{\prime\top}\mat{S}^{(p)-1}\mat{Z}^{\prime} + \mat{R}_k^{(p+1:q)}
+      \end{bmatrix}\Bigg).
+    \end{split}
   \end{equation*}
 \end{LaTeXdescription}
 
-From the observed measurement models \eqref{eqn:0q_obs_measurement_model}, \eqref{eqn:pp_obs_measurement_model} and \eqref{eqn:pq_obs_measurement_model} we can tell that the parameters $\mat{Z}$ and $\mat{Y}$ control the difference in estimation performance between the three mutually exclusive and exhaustive estimators. More specifically, while both components affect estimation, the fully correlated component $\mat{Z}$ predominantly affects the difference in estimation between estimators of the form $\mathsf{e}){0,q}$ and $\mathsf{e}){p,p}$, while the uncorrelated component $\mat{Y}$ affects the difference between estimators $\mathsf{e}){p,p}$ and $\mathsf{e}){p,q}$. These two differences exactly correspond to the difference that we want to guarantee cryptographically from section \ref{sec:prob}. The effects of choosing $mat{Z}$ and $\mat{Y}$ will be more formally explored in the cryptography and simulation sections, \ref{sec:crypto} and \ref{sec:sim}, respectively.
-
-% NOTE problem with notation. \mat{S} is the odd one out. (a:b) should denote stacking of item rather than subindexing. Alternative for S? Or perhaps a redefinition of S? S^(a) could be defined instead and S alone never used? Seems reasonable - all others will have a:b notation.
-% Modified noise v could have no (a) super script?
-% observed meausrments (p,q) could be [p.q] instead to distinguish from a:b better. This should be changed in (up) and (p) cryptographic notation earlier and perhaps the estimator e notation too.
+From the observed measurement models \eqref{eqn:0q_obs_measurement_model}, \eqref{eqn:pp_obs_measurement_model} and \eqref{eqn:pq_obs_measurement_model} we can tell that the parameters $\mat{Z}$ and $\mat{Y}$ control the difference in estimation performance between the three mutually exclusive and exhaustive estimators. More specifically, while both components affect estimation, the fully correlated component $\mat{Z}$ predominantly affects the difference in estimation between estimators of the form $\mathsf{e}^{[0,q]}$ and $\mathsf{e}^{[p,p]}$, while the uncorrelated component $\mat{Y}$ affects the difference between estimators $\mathsf{e}^{[p,p]}$ and $\mathsf{e}^{[p,q]}$. These two differences exactly correspond to the difference that we want to guarantee cryptographically from section \ref{sec:prob}. The effects of choosing $mat{Z}$ and $\mat{Y}$ will be more formally explored in the cryptography and simulation sections, \ref{sec:crypto} and \ref{sec:sim}, respectively.
 
 % 
 % ##    ##  #######  ####  ######  ########    ########  ####  ######  ######## 
@@ -439,6 +439,9 @@ From the observed measurement models \eqref{eqn:0q_obs_measurement_model}, \eqre
 % 
 
 \subsection{Noise Distribution}\label{subsec:noise_dist}
+
+
+
 \begin{itemize}
   \item While we have described a method for generating noise for $n$ sensors such that different estimators observe different measurement models being followed, we have not discussed where noise is generated and how it is distributed to the relevant sensors.
   \item Due to the correlation between sensor noises in the method above, the generation of one sensor's noise is dependant on generated noise from others. To handle this, they can be generated either centrally and distributed to sensors or sequentially by the sensors $1$ through $n$.
