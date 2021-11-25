@@ -319,7 +319,7 @@ With \eqref{eqn:p_correlated_noises_generation}, at every timestep $k$, $\vec{g}
 
 \subsection{Measurement Modification}
 With a way to generate noises for sensors and estimators, we can introduce the means of measurement modification and the observable measurement models for different estimators. Measurement modification is peformed by adding noises $\vec{g}_k^{(1:N)}$ to measurements from each sensor $i$ before making them public, resulting in modified measurement equations for each sensor,
-\begin{equation}
+\begin{equation}\label{eqn:modified_measurement}
 \begin{split}
   \vec{y}_{k,i}^\prime &= \vec{y}_{k,i} + \vec{g}_{k,i}\\
   &= \mat{H}_{k,i}\vec{x}_k + \vec{v}_{k,i} + \vec{g}_{k,i}\,,
@@ -439,13 +439,19 @@ From the observed measurement models \eqref{eqn:0q_obs_measurement_model}, \eqre
 % 
 
 \subsection{Noise Distribution}\label{subsec:noise_dist}
+While we have described a method for generating noise to modify $N$ measurements such that different estimators observe different measurement models, we have not discussed where the noise is generated and how it is distributed to the sensors. To handle the inherent correlation noises $\vec{g}_{k,i}$ added to measurements from different sensors, we can either generate them centrally and distribute them to sensors or sequentially at the sensors themselves, given previously generated values.
+\begin{LaTeXdescription}
+  \item[Central noise generation] To compute noises centrally, \eqref{eqn:p_correlated_noises_generation} can be computed at a single central processor and each noise $\vec{g}_{k,i}$, $1\leq i \leq N$, can be sent to the respective sensor $i$ before modifying their local measurement by \eqref{eqn:modified_measurement}.
+  \item[Sequential noise generation] To compute noises sequentially, each sensor $i$ can generate its noise $\vec{g}_{k,i}$ given preceeding noises $\vec{g}_{k,j}$, $1\leq j < i$. The conditional Gaussian 
+\end{LaTeXdescription}
+The methods above both (trust or communication issues)
 
-
+In both cases, however, the computation of all noises $\vec{g}_k^{(1:N)}$ can be performed offline such that sensors have sufficient additive noises already computed prior to commencement of meausrement.
 
 \begin{itemize}
-  \item While we have described a method for generating noise for $n$ sensors such that different estimators observe different measurement models being followed, we have not discussed where noise is generated and how it is distributed to the relevant sensors.
-  \item Due to the correlation between sensor noises in the method above, the generation of one sensor's noise is dependant on generated noise from others. To handle this, they can be generated either centrally and distributed to sensors or sequentially by the sensors $1$ through $n$.
-  \item To compute them centrally, equation (generation of $n$ noises given before) is computed by a central processor and each noise $p_{i,k}$, $1\leq i \leq n$, is sent to sensor $i$ to add to their measurement at time $k$.
+  %\item While we have described a method for generating noise for $n$ sensors such that different estimators observe different measurement models being followed, we have not discussed where noise is generated and how it is distributed to the relevant sensors.
+  %\item Due to the correlation between sensor noises in the method above, the generation of one sensor's noise is dependant on generated noise from others. To handle this, they can be generated either centrally and distributed to sensors or sequentially by the sensors $1$ through $n$.
+  %\item To compute them centrally, equation (generation of $n$ noises given before) is computed by a central processor and each noise $p_{i,k}$, $1\leq i \leq n$, is sent to sensor $i$ to add to their measurement at time $k$.
   \item Sequentially, each sensor can generate its own noise $p_{i,k}$ based on the noises generated before it, that is, given $p_{j,k}$, $1\leq j<i$, the conditional Gaussian can be computed as (equation for generating sequential correlation). However, a downside of this method is the increasing size of data being sent to each sensor as the noise is generated and can result in later sensors requiring more processing power than may be available.
   \item In both of the cases, however, the computation of noises $p_{i,k}$ can be done offline and in advance, such that sensors have sufficient additive noises already computed prior to commencement of measurement.
 \end{itemize}
