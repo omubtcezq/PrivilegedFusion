@@ -109,15 +109,7 @@ In section \ref{sec:prob}, the multisensor estimation privilege problem is prese
 % 
 
 \subsection{Notation}\label{subsec:notation}
-\begin{itemize}
-  \item Matrices, vectors.
-  \item Positive definitness.
-  \item Diag function for normal and block vectors
-  \item Stacking notation $\vec{a}^{(n:m)}$
-  \item Pseudorandom distribution.
-  \item Estimator in cryptographic sense.
-  \item Negligible fuction and negligible covariance.
-\end{itemize}
+Lowercase underlined characters $\vec{v}$ are vectors and uppercase bold characters $\mat{M}$ are matrices, while $\vec{0}$, $\mat{0}$ and $\mat{I}$ are the zero vector, zero matrix and identity matrix, respectively, with sizes inferrable from context. $\mat{M}\succ 0$ and $\mat{M}\succeq 0$ denote positive definitness and semi-definitness, respectively, and $\mat{M}\succ \mat{N}$ is short for $\mat{M} - \mat{N} \succ 0$. Given an indexed vector $\vec{v}_i$, notation $\vec{v}^{(a:b)}$, $a<b$, will denote the stacked vector $[\vec{v}_a\ \vec{v}_{a+1}\ \cdots\ \vec{v}_b]^\top$, while for indexed matrices $\mat{M}_i$, $\mat{M}^{(a:b)}$ will denote the block-diagonal matrix with the indexed matrices along the diagonal. Function $\mathsf{Cov}[\cdot]$ computes the covariance of a random vector, $\sim$ denotes distribution, $\dot{\sim}$ denotes pseudorandom distribution and, in a cryptographic context, $\mathcal{A}(\vec{v})$ denotes the output of an arbitrary algorithm $\mathcal{A}$ given inputs $\vec{v}$.
 
 % 
 % 8888888b.  8888888b.   .d88888b.  888888b.   
@@ -134,7 +126,7 @@ In section \ref{sec:prob}, the multisensor estimation privilege problem is prese
 % 
 
 \section{Problem Formulation}\label{sec:prob}
-We are interested in environments where multiple sensors are present and the fusion of their measurements can lead to better state estimation accuracy of the system they are measuring. In these environments, we want to provide levels of privilege to state estimators such those with a higher privilege can perform better than those with a lower one, while taking into consideration the estimation benefits from fusing additional measurements. We will consider linear and Gaussian models, where a state $\vec{x}_k \in \mathbb{R}^n$ at an integer timestep $k$, follows a system model given by
+We are interested in environments where multiple sensors are present and the fusion of their measurements can lead to better state estimation accuracy of the system they are measuring. In these environments, we want to provide levels of privilege to state estimators such those with a higher privilege can perform better than those with a lower one, while taking into consideration the estimation benefits from fusing additional measurements. We will consider linear and Gaussian models, where a state $\vec{x}_k \in \mathbb{R}^n$, at an integer timestep $k$, follows a system model given by
 \begin{equation}
   \vec{x}_k = \mat{F}_k \vec{x}_{k-1} + \vec{w}_k\,,
 \end{equation}
@@ -143,6 +135,8 @@ with white noise term $\vec{w}_k \sim \mathcal{N}(\vec{0},\mat{Q}_k)$ and a know
   \vec{y}_{k,i} = \mat{H}_{k,i} \vec{x}_k + \vec{v}_{k,i}\,,
 \end{equation}
 with white noise term $\vec{v}_{k,i} \sim \mathcal{N}(\vec{0},\mat{R}_{k,i})$ and a known covariance $\mat{R}_{k,i} \in \mathbb{R}^{m \times m}$. In addition to these models, we assume that all sensors $i$ are synchronised in timesteps $k$ to simplify later cryptographic evaluation. In practice, this would restrict the presented schemes to scenarios where synchronisation is easier to guarantee, such as ones where measurements are taken infrequently.
+
+% trust between sensors needs to be discussed here
 
 Each of the sensors also holds a secret key $\mathsf{sk}_i$, which can be made available to estimators of appropriate privilege. The privileges that we consider, in terms of access to keys and measurements, will be defined by sequential sensors. That is, in the presence of $N$ sensors, we consider exactly $N$ possible privilege levels, where each privilege $p>0$ corresponds to holding the sequential secret keys $\mathsf{sk}_j$, $1\leq j \leq p$ while being unprivileged, $p=0$, corresponds to holding none. We assume that estimators have access to all ``privileged measurements'', those from sensors whose keys they hold, and can additionally fuse ``unprivileged measurements'' from those whose keys they do not hold. We can therefore capture their capabilities by letting $\mathsf{e}^{[p,q]}$ denote an estimator with privilege $p$ and access to measurements from $q\geq p$ sensors, $1\leq i \leq q$.
 
@@ -271,14 +265,14 @@ Similarly to the Gaussian keystream generation in \eqref{eqn:gaussian_keystream_
     \mat{Z} & \cdots & \mat{Z}\\
     \vdots & \ddots & \vdots\\
     \mat{Z} & \cdots & \mat{Z}\\
-  \end{bmatrix}+\mathsf{diag}\left(
+  \end{bmatrix}+
   \begin{bmatrix}
-    \mat{Y}\\
-    \vdots\\
-    \mat{Y}\\
-  \end{bmatrix}\right)\,.
+    \mat{Y} & \mat{0} & \mat{0}\\
+    \mat{0} & \ddots & \mat{0}\\
+    \mat{0} & \mat{0} & \mat{Y}\\
+  \end{bmatrix}\,,
 \end{equation}
-The generation of all $N$ multivariate Gaussian noises at timestep $k$, $\vec{g}_k^{(1:N)}$, can now be written as
+and $\mat{S}^{(1)}=\mat{Z}+\mat{Y}$. The generation of all $N$ multivariate Gaussian noises at timestep $k$, $\vec{g}_k^{(1:N)}$, can now be written as
 \begin{equation}\label{eqn:all_correlated_noises_generation}
   \vec{g}_k^{(1:N)}=
   \begin{bmatrix}
@@ -303,7 +297,7 @@ where each $\vec{z}_{k,i}$ is computed as $\vec{z}_k$ in \eqref{eqn:standard_gau
     \vec{z}_{k,p}
   \end{bmatrix}\,,
 \end{equation}
-generates the same first $p$ noises $\vec{g}_k^{(1:p)}$ as would be obtained from \eqref{eqn:all_correlated_noises_generation} since $\mat{S}^{(p)\frac{1}{2}}\in\mathbb{R}^{pm\times pm}$ is the top left block from $\mat{S}^{(N)\frac{1}{2}}$ when using the Cholesky decomposition.
+generates the same first $p$ noises $\vec{g}_k^{(1:p)}$ as would be obtained from \eqref{eqn:all_correlated_noises_generation} since $\mat{S}^{(p)\frac{1}{2}}\in\mathbb{R}^{pm\times pm}$ is equal to the top left block of matrix $\mat{S}^{(N)\frac{1}{2}}$ when using the Cholesky decomposition.
 
 With \eqref{eqn:p_correlated_noises_generation}, at every timestep $k$, $\vec{g}_k^{(1:N)}$ can be generated using all $N$ keys and used to modify sensor measurements, while the subset $\vec{g}_k^{(1:p)}$ can be generated by estimators of privilege $p$ using the only keys they hold.
 
@@ -351,18 +345,18 @@ where $\vec{v}_k^{(1:q)}\sim\mathcal{N}(\vec{0},\mat{R}_k^{(1:q)})$ and $\vec{g}
   \end{bmatrix}\,,
 \end{equation*}
 \begin{equation*}
-  \mat{R}_k^{(1:q)}=\mathsf{diag}\left(
+  \mat{R}_k^{(1:q)}=
     \begin{bmatrix}
-      \mat{R}_{k,1}\\
-      \vdots\\
-      \mat{R}_{k,q}
-    \end{bmatrix}\right)\,
+      \mat{R}_{k,1} & \mat{0} & \mat{0}\\
+      \mat{0} & \ddots & \mat{0}\\
+      \mat{0} & \mat{0} & \mat{R}_{k,q}
+    \end{bmatrix}\,
 \end{equation*}
 and $\mat{S}^{(q)} \in \mathbb{R}^{qm\times qm}$ defined by \eqref{eqn:noise_correlation_matrix}.
 
-Since we are using a cryptographically sound stream cipher to generate the added Gaussian keystream, the pseudorandom samples are indistingishable from truly random ones to estimators without appropriate keys, which leads us to three observable measurement models for differing estimators.
+Since we are using a cryptographically sound stream cipher to generate the added Gaussian keystream, the pseudorandom samples are indistinguishable from truly random ones to estimators without appropriate keys, which leads us to three observable measurement models for differing estimators.
 \begin{LaTeXdescription}
-  \item[Estimators of the form $\mathsf{e}^{[0,q]}$] Here, no keys are held by the unprivileged estimators and the generated noise $\vec{g}_k^{(1:q)}$ is indistinguishable from noise from the truly random distribution $\mathcal{N}(\vec{0}, \mat{S}^{(q)})$. For these estimators, we can rewrite the measurement equation \eqref{eqn:measurement_equation} as the observed measurment equation
+  \item[Estimators of the form $\mathsf{e}^{[0,q]}$] Here, no keys are held by the unprivileged estimators and the generated noise $\vec{g}_k^{(1:q)}$ is indistinguishable from noise from the truly random distribution $\mathcal{N}(\vec{0}, \mat{S}^{(q)})$. For these estimators, we can rewrite the measurement equation \eqref{eqn:measurement_equation} as the observed measurement equation
   \begin{equation}\label{eqn:0q_obs_measurement_model}
     \vec{y}_k^{[0,q]} = \mat{H}_k^{(1:q)}\vec{x}_k + \vec{v}_k^{\prime}\,,
   \end{equation}
@@ -439,22 +433,19 @@ From the observed measurement models \eqref{eqn:0q_obs_measurement_model}, \eqre
 % 
 
 \subsection{Noise Distribution}\label{subsec:noise_dist}
-While we have described a method for generating noise to modify $N$ measurements such that different estimators observe different measurement models, we have not discussed where the noise is generated and how it is distributed to the sensors. To handle the inherent correlation noises $\vec{g}_{k,i}$ added to measurements from different sensors, we can either generate them centrally and distribute them to sensors or sequentially at the sensors themselves, given previously generated values.
+While we have described a method for generating noises that modify $N$ measurements resulting in different observed measurement models depending on estimator privilege, we have not discussed where the noise is generated and how it is distributed to the sensors. To handle the inherent correlation of the noises $\vec{g}_{k,i}$, $1\leq i \leq N$, used to modify measurements, they can be either generated centrally before distribution to sensors or sequentially at the sensors themselves, given previously generated values.
 \begin{LaTeXdescription}
-  \item[Central noise generation] To compute noises centrally, \eqref{eqn:p_correlated_noises_generation} can be computed at a single central processor and each noise $\vec{g}_{k,i}$, $1\leq i \leq N$, can be sent to the respective sensor $i$ before modifying their local measurement by \eqref{eqn:modified_measurement}.
-  \item[Sequential noise generation] To compute noises sequentially, each sensor $i$ can generate its noise $\vec{g}_{k,i}$ given preceeding noises $\vec{g}_{k,j}$, $1\leq j < i$. The conditional Gaussian 
+  \item[Central noise generation] To compute noises centrally, \eqref{eqn:p_correlated_noises_generation} can be computed at a single central processor and each noise $\vec{g}_{k,i}$, $1\leq i \leq N$ sent to respective sensors $i$ before modifying their local measurement by \eqref{eqn:modified_measurement}.
+  \item[Sequential noise generation] To compute the same noises sequentially, at each timestep $k$, sensor $1$ can generate its noise independently using its current standard Gaussian sample $\vec{z}_{k,1}$, by $\vec{g}_{k,1} = \mat{S}^{(1)\frac{1}{2}}\vec{z}_{k,1}$. Each following sensor $i>1$ can generate its noise $\vec{g}_{k,i}$ given the preceeding noises $\vec{g}_k^{(1:i-1)}$ using the same conditional pseudorandom Gaussian breakdown as in \eqref{eqn:conditional_noise_distribution} allowing for the generation of $\vec{g}_{k,i}$ with the transformation
+  \begin{equation}
+    \begin{split}
+      \vec{g}_{k,i} = &\mat{Z}^{\prime\top}\mat{S}^{(i-1)-1}\vec{g}_k^{(1:i-1)} +\\
+      &\qquad (\mat{S}^{(1)}-\mat{Z}^{\prime\top}\mat{S}^{(i-1)-1}\mat{Z}^\prime)^\frac{1}{2}\vec{z}_{k,i}\,.
+    \end{split}
+  \end{equation}
+  After local noise generation, each sensor $i$ sends its result $\vec{g}_{k,i}$ as well as preceding results $\vec{g}_k^{(1:i-1)}$ to the next sensor. This method has the clear downside of increasing communication costs with each successive generation but does not require a single central communicator.
 \end{LaTeXdescription}
-The methods above both (trust or communication issues)
-
-In both cases, however, the computation of all noises $\vec{g}_k^{(1:N)}$ can be performed offline such that sensors have sufficient additive noises already computed prior to commencement of meausrement.
-
-\begin{itemize}
-  %\item While we have described a method for generating noise for $n$ sensors such that different estimators observe different measurement models being followed, we have not discussed where noise is generated and how it is distributed to the relevant sensors.
-  %\item Due to the correlation between sensor noises in the method above, the generation of one sensor's noise is dependant on generated noise from others. To handle this, they can be generated either centrally and distributed to sensors or sequentially by the sensors $1$ through $n$.
-  %\item To compute them centrally, equation (generation of $n$ noises given before) is computed by a central processor and each noise $p_{i,k}$, $1\leq i \leq n$, is sent to sensor $i$ to add to their measurement at time $k$.
-  \item Sequentially, each sensor can generate its own noise $p_{i,k}$ based on the noises generated before it, that is, given $p_{j,k}$, $1\leq j<i$, the conditional Gaussian can be computed as (equation for generating sequential correlation). However, a downside of this method is the increasing size of data being sent to each sensor as the noise is generated and can result in later sensors requiring more processing power than may be available.
-  \item In both of the cases, however, the computation of noises $p_{i,k}$ can be done offline and in advance, such that sensors have sufficient additive noises already computed prior to commencement of measurement.
-\end{itemize}
+In both cases above, the computation of all noises $\vec{g}_k^{(1:N)}$ can be performed offline such that sensors have sufficient additive noises already computed prior to commencement of measurement.
 
 % 
 %  .d8888b.  8888888b. Y88b   d88P 8888888b. 88888888888 .d88888b.  
@@ -471,6 +462,9 @@ In both cases, however, the computation of all noises $\vec{g}_k^{(1:N)}$ can be
 % 
 
 \section{Cryptographic Privilege}\label{sec:crypto}
+To give a sketch proof of the cryptographic privilege provided by the presented scheme, we first recall some important assumptions. We consider cryptographically generated random floating-point numbers to be sufficiently close to real random numbers that proofs using real numbers can be used. 
+
+
 \begin{itemize}
   \item To give a sketch proof of the cryptographic privilege provided by the presented multisensor scheme, we first recall two important assumptions. We consider cryptographically generated random floating-point numbers to be sufficiently close to real numbers that real number proofs can be used, namely the optimality of the Kalman filter, and that all sensors are synchronised, such that noises $p_{i,k}$ are always added to measurements $z_{i,k}$ from each sensor and that the measurement stacked model (given a the start of the scheme section) is correct for all $k$.
   \item The sketch proof will rely on the optimality of the linear Kalman filter to produce a series of covariances that are the best achievable (smallest possible) for given estimators and take the difference between estimators in question to bound their difference and achieve cryptographic estimation privilege.
