@@ -139,7 +139,7 @@ We are interested in environments where multiple sensors are present and the fus
   \vec{x}_k = \mat{F}_k \vec{x}_{k-1} + \vec{w}_k\,,
 \end{equation}
 with white noise term $\vec{w}_k \sim \mathcal{N}(\vec{0},\mat{Q}_k)$ and a known covariance $\mat{Q}_k \in \mathbb{R}^{n \times n}$. Similarly, measurements $\vec{y}_{k,i} \in \mathbb{R}^m$ from each sensor $i$, $1\leq i\leq N$, follow the measurement models
-\begin{equation}
+\begin{equation}\label{eqn:measurement_models}
   \vec{y}_{k,i} = \mat{H}_{k,i} \vec{x}_k + \vec{v}_{k,i}\,,
 \end{equation}
 with white noise term $\vec{v}_{k,i} \sim \mathcal{N}(\vec{0},\mat{R}_{k,i})$ and a known covariance $\mat{R}_{k,i} \in \mathbb{R}^{m \times m}$. In addition to these models, we assume that all sensors $i$ are synchronised in timesteps $k$ to simplify later cryptographic evaluation. In practice, this would restrict the presented schemes to scenarios where synchronisation is easier to guarantee, such as ones where measurements are taken infrequently.
@@ -153,7 +153,7 @@ To cryptographically guarantee the difference between estimation performances, w
 \end{LaTeXdescription}
 The resulting scheme should be such that two parameters are responsible for choosing the values of these two bounds.
 \begin{remark}
-  We stress that the two bounds that will be guaranteed only bound the performances of honest-but-curious estimators. That is, nothing is said about estimators which may corrupt sensors to obtain keys beyond their privilege. Bounds on leakage caused by learning additional keys are beyond the scope of this work.
+  We stress that the two bounds that will be guaranteed only bound the performances of estimators of the specified forms. That is, nothing is said about estimators which may corrupt sensors to obtain keys beyond their privilege or additional unprivileged measurements. Bounds on leakage caused by corrupting sensors can in some cases by captured by estimators of a new form $\mathsf{e}^{[p^\prime,q^\prime]}$, but are in general beyond the scope of this work.
 \end{remark}
 
 % 
@@ -222,15 +222,15 @@ The formal definition of a privileged estimation scheme and accompanying notion 
 A privileged estimation scheme is defined by a pair of probabilistic algorithms $(\mathsf{Setup}, \mathsf{Noise})$:
 \begin{LaTeXdescription}
   \item[$\mathsf{Setup}(\mathcal{M}_S,\mathcal{M}_M,\kappa)$] Given system and measurement models $\mathcal{M}_S$ and $\mathcal{M}_M$, and the security parameter $\kappa$, public parameters $\mathsf{pub}$ and a secrect key $\mathsf{sk}$ are returned.
-  \item[$\mathsf{Noise}(\mathsf{pub},\mathsf{sk},k,\mathcal{M}_S,\mathcal{M}_M,\vec{y}_1,\dots,\vec{y}_k)$] Given public parameters $\mathsf{pub}$, secret key $\mathsf{sk}$, timestep $k$, models $\mathcal{M}_S$ and $\mathcal{M}_M$, and measurements $\vec{y}_1,\dots,\vec{y}_k$, modified privileged and unprivileged measurements, $\vec{y}^{[p]}_k$ and $\vec{y}^{[up]}_k$, respectively, are returned.
+  \item[$\mathsf{Noise}(\mathsf{pub},\mathsf{sk},k,\mathcal{M}_S,\mathcal{M}_M,\vec{y}_1,\dots,\vec{y}_k)$] Given public parameters $\mathsf{pub}$, secret key $\mathsf{sk}$, timestep $k$, models $\mathcal{M}_S$ and $\mathcal{M}_M$, and measurements $\vec{y}_1,\dots,\vec{y}_k$, modified privileged and unprivileged measurements, $\vec{y}^{[\mathsf{p}]}_k$ and $\vec{y}^{[\mathsf{up}]}_k$, respectively, are returned.
 \end{LaTeXdescription}
 Using the defintions from \cite{risticCryptographicallyPrivilegedState2022} for an \textit{estimator} and \textit{negligible covariance} $\mathsf{neglCov}_m(\kappa)$, the notion of covariance privilege is defined as follows.
 \begin{definition}\label{def:cov_priv_security_notion}
   A privileged estimation scheme meets notion \textit{$\{\mat{D}_1,\mat{D}_2,\dots\}$-Covariance Privilege for Models $\mathcal{M}_S$ and $\mathcal{M}_M$} if for any PPT estimator $\mathcal{A}$, there exists a PPT estimator $\mathcal{A}^\prime$, such that
   \begin{equation}
     \begin{split}
-      &\mathsf{Cov}\left[\mathcal{A}\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{[up]}_1,\dots,\vec{y}^{[up]}_k\right) - \vec{x}_k\right]\\
-      &-\mathsf{Cov}\left[\mathcal{A}^\prime\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{[p]}_1,\dots,\vec{y}^{[p]}_k\right) - \vec{x}_k\right]\\
+      &\mathsf{Cov}\left[\mathcal{A}\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{[\mathsf{up}]}_1,\dots,\vec{y}^{[\mathsf{up}]}_k\right) - \vec{x}_k\right]\\
+      &-\mathsf{Cov}\left[\mathcal{A}^\prime\left(k,\kappa,\mathsf{pub},\mathcal{M}_S,\mathcal{M}_M,\vec{y}^{[\mathsf{p}]}_1,\dots,\vec{y}^{[\mathsf{p}]}_k\right) - \vec{x}_k\right]\\
       &\quad\succeq \mat{D}_k - \mathsf{neglCov}_m(\kappa)
     \end{split}
   \end{equation}
@@ -330,30 +330,39 @@ With a way to generate noises for sensors and estimators, we can introduce the m
 \end{equation}
 with real measurement noise $\vec{v}_{k,i}\sim\mathcal{N}(\vec{0},\mat{R}_{k,i})$ and the vector of all added noises $\vec{g}_k^{(1:N)}\ \dot{\sim}\ \mathcal{N}(\vec{0}, \mat{S}^{(N)})$. As we assume that sensors are synchronised, we can capture the correlation between these modified measurements exactly by considering the stacked measurement model for any estimator with access to $q$ measurements, $\mathsf{e}^{[p,q]}$, at time $k$, given by
 \begin{equation}\label{eqn:measurement_equation}
-  \vec{y}_k^{(1:q)} = \mat{H}_k^{(1:q)}\vec{x}_k + \vec{v}_k^{(1:q)} + \vec{g}_k^{(1:q)}
+  \begin{split}
+    \vec{y}_k^{\prime(1:q)} &= \vec{y}_k^{(1:q)} + \vec{g}_k^{(1:q)}\\
+    &= \mat{H}_k^{(1:q)}\vec{x}_k + \vec{v}_k^{(1:q)} + \vec{g}_k^{(1:q)}
+  \end{split}
 \end{equation}
 where $\vec{v}_k^{(1:q)}\sim\mathcal{N}(\vec{0},\mat{R}_k^{(1:q)})$ and $\vec{g}_k^{(1:q)}\ \dot{\sim}\ \mathcal{N}(\vec{0},\mat{S}^{(q)})$, with
 \begin{equation*}
-  \vec{y}_k^{(1:q)}=
+  \vec{y}_k^{\prime(1:q)}=
   \begin{bmatrix}
     \vec{y}_{k,1}^\prime\\
     \vdots\\
     \vec{y}_{k,q}^\prime
+  \end{bmatrix},\ 
+  \vec{y}_k^{(1:q)}=
+  \begin{bmatrix}
+    \vec{y}_{k,1}\\
+    \vdots\\
+    \vec{y}_{k,q}
   \end{bmatrix},\ 
   \mat{H}_k^{(1:q)}=
   \begin{bmatrix}
     \mat{H}_{k,1}\\
     \vdots\\
     \mat{H}_{k,q}\\
-  \end{bmatrix}, \
+  \end{bmatrix}\,,
+\end{equation*}
+\begin{equation*}
   \vec{v}_k^{(1:q)}=
   \begin{bmatrix}
     \vec{v}_{k,1}\\
     \vdots\\
     \vec{v}_{k,q}
-  \end{bmatrix}\,,
-\end{equation*}
-\begin{equation*}
+  \end{bmatrix},\ 
   \mat{R}_k^{(1:q)}=
     \begin{bmatrix}
       \mat{R}_{k,1} & \mat{0} & \mat{0}\\
@@ -371,7 +380,7 @@ Since we are using a cryptographically sound stream cipher to generate the added
   \end{equation}
   with truly Gaussian term $\vec{v}_k^{\prime} \sim \mathcal{N}(\vec{0}, \mat{R}_k^{(1:q)}+\mat{S}^{(q)})$.
   
-  \item[Estimators of the form $\mathsf{e}^{[p,p]}$] Estimators with keys for all the sensors to which they have access can generate all added noises and subtract them from the recieved measurements. That is, $\vec{g}_k^{(1:p)}$ can be generated and $\vec{y}_k^{[p,p]}=\vec{y}_k^{(1:p)}-\vec{g}_k^{(1:p)}$ computed to give the observed measurement model equal to recieving unmodified measurements only,
+  \item[Estimators of the form $\mathsf{e}^{[p,p]}$] Estimators with keys for all the sensors to which they have access can generate all added noises and subtract them from the recieved measurements. That is, $\vec{g}_k^{(1:p)}$ can be generated and $\vec{y}_k^{[p,p]}=\vec{y}_k^{\prime(1:p)}-\vec{g}_k^{(1:p)}$ computed to give the observed measurement model equal to recieving unmodified measurements only,
   \begin{equation}\label{eqn:pp_obs_measurement_model}
     \vec{y}_k^{[p,p]} = \mat{H}_k^{(1:p)}\vec{x}_k + \vec{v}_k^{(1:p)}\,,
   \end{equation}
@@ -406,7 +415,7 @@ Since we are using a cryptographically sound stream cipher to generate the added
   \end{equation}
   Now, subtracting the known noises $\vec{g}_k^{(1:p)}$ and the means of unknown noises \eqref{eqn:conditional_noise_distribution} from recieved measurements,
   \begin{equation}\label{eqn:pq_measurement_offset}
-    \vec{y}_k^{[p,q]}=\vec{y}_k^{(1:q)} - 
+    \vec{y}_k^{[p,q]}=\vec{y}_k^{\prime(1:q)} - 
     \begin{bmatrix}
       \vec{g}_k^{(1:p)}\\
       \mat{Z}^{\prime\top}\mat{S}^{(p)-1}\vec{g}_k^{(1:p)}
@@ -474,7 +483,7 @@ In both cases above, the computation of all noises $\vec{g}_k^{(1:N)}$ can be pe
 % 
 
 \section{Cryptographic Privilege}\label{sec:crypto}
-To give sketch proofs of the cryptographic guarantees provided by the presented scheme, we first recall some made assumptions. We consider floating-point numbers to be sufficiently close to real random numbers that real-number proofs still hold, and that all sensors are synchronised in $k$ such that observed measurement models \eqref{eqn:0q_obs_measurement_model}, \eqref{eqn:pp_obs_measurement_model} and \eqref{eqn:pq_obs_measurement_model} are exactly correct. Using these assumptions, the proofs rely on the optimality of the linear Kalman filter (KF) \cite{haugBayesianEstimationTracking2012} to produce a series of covariances for optimal estimators and take their difference to obtain the \textit{Different Keys Lower Bound} and \textit{Same Keys Upper Bound} from section \ref{sec:prob}. Similarly to \cite{risticCryptographicallyPrivilegedState2022}, these series give $\mat{D}_1,\mat{D}_2,\dots$ in definition \ref{def:cov_priv_security_notion} for the two bounds, and demonstrate that the existence of an estimator violating the notion implies the existence of a linear estimator with lower mean squared error (MSE) than the KF. This guarantees the bound by contrapositive.
+To give sketch proofs of the cryptographic guarantees provided by the presented scheme, we first recall some made assumptions. We consider floating-point numbers to be sufficiently close to real random numbers that real-number proofs still hold, and that all sensors are synchronised in $k$ such that observed measurement models \eqref{eqn:0q_obs_measurement_model}, \eqref{eqn:pp_obs_measurement_model} and \eqref{eqn:pq_obs_measurement_model} are exactly correct. Using these assumptions, the proofs rely on the optimality of the linear Kalman filter (KF) \cite{haugBayesianEstimationTracking2012} to produce a series of covariances for optimal estimators and take their difference to obtain the \textit{Different Keys Lower Bound} and \textit{Same Keys Upper Bound} from section \ref{sec:prob}. Similarly to \cite{risticCryptographicallyPrivilegedState2022}, these series can be used as $\mat{D}_1,\mat{D}_2,\dots$ in definition \ref{def:cov_priv_security_notion} for appropriately formulated privileged estimation schemes for the two bounds, and demonstrate that the existence of an estimator violating the notion implies the existence of a linear estimator with lower mean squared error (MSE) than the KF. This guarantees the bound by contrapositive.
 
 % 
 % ########  #### ######## ########    ##    ## ######## ##    ##  ######  
@@ -487,26 +496,45 @@ To give sketch proofs of the cryptographic guarantees provided by the presented 
 % 
 
 \subsection{Different Keys Lower Bound}\label{subsec:crypto_different_keys_lower_bound}
-First we consider the lower bound to the difference in estimation between estimators of the form $\mathsf{e}^{[0,N]}$ and $\mathsf{e}^{[p,p]}$. The observed measurement models for the two estimators are given by \eqref{eqn:0q_obs_measurement_model} and \eqref{eqn:pp_obs_measurement_model}, respectively, when $q=N$. 
-
-% Scheme in terms of two algorithms here? (different from dot points)
-
-With these measurement models and the system model \eqref{eqn:system_model}, the KF can be used to recursively compute the optimal estimate covariances $\mat{P}_k$ at each timestep $k$ for an estimator given an initial estimate covairance. Since the KF also preserves initial covariance order,
-\begin{equation}
-  \mat{P}_k \succeq \mat{P}_k^\prime \implies \mat{P}_{k+1} \succeq \mat{P}_{k+1}^\prime\,,
+First we consider the lower bound to the difference in estimation between estimators of the form $\mathsf{e}^{[0,N]}$ and $\mathsf{e}^{[p,p]}$. Since the observed measurement models for these estimators \eqref{eqn:0q_obs_measurement_model}, \eqref{eqn:pp_obs_measurement_model} interpret all available measurements as a single large measurement and that we do not consider estimators that corrupt sensors, we can treat the large measurement as coming from a single sensor and use the notion of covariance privilege in definition \ref{def:cov_priv_security_notion} to guarantee the bound. The associated privileged estimation scheme for the different keys lower bound guarantee can be written for each privilege $p$ as
+\begin{LaTeXdescription}
+  \item[$\mathsf{Setup}$] Given the system model \eqref{eqn:system_model}, all measurements models \eqref{eqn:measurement_models} (interpretable as a single stacked measurement model) and a security parameter $\kappa$ used by all sensors, generate $N$ stream cipher keys $\mathsf{sk_i}$, $1\leq i \leq N$, and let the secret key $\mathsf{sk}$ include all $N$ keys. Generate the correlated and uncorrelated noise terms, $\mat{Z}$ and $\mat{Y}$, and an initial estimate and error covariance, $\hat{\vec{x}}_0$ and $\mat{P}_0$, and include these in the public parameters $\mathsf{pub}$.
+  
+  \item[$\mathsf{Noise}$] Given parameters, cipher keys, timestep $k$ and true sensor measurements $\vec{y}_k^{(1:N)}$, let $\vec{y}_k^{[\mathsf{up}]}=\vec{y}_k^{[0,N]}$ using \eqref{eqn:0q_obs_measurement_model} and $\vec{y}_k^{[\mathsf{p}]}=\vec{y}_k^{[p,p]}$ using \eqref{eqn:pp_obs_measurement_model}.
+\end{LaTeXdescription}
+With the above formulation, we can use the KF to recursively compute the optimal estimate error covariances for estimators with access to only measurements $\vec{y}_k^{[\mathsf{up}]}$ or $\vec{y}_k^{[\mathsf{p}]}$, for all $k$. Since the KF preserves initial covariance order, $\mat{P}_k \succeq \mat{P}_k^\prime \implies \mat{P}_{k+1} \succeq \mat{P}_{k+1}^\prime$, a lower bound can be guaranteed when using the initial covariance $\mat{P}_0=\mat{0}$. Therefore, the minimum error covariance for an estimator $\mathsf{e}^{[0,N]}$, with access to measurements $\vec{y}_k^{[\mathsf{up}]}$, is given by the combined KF predict and update equations
+\begin{equation}\label{eqn:0N_lower_bound_covariance}
+  \begin{split}
+    \mat{P}_k^{[\mathsf{up}]} =& \Bigl( \mat{I} - (\mat{F}_k\mat{P}_{k-1}^{[\mathsf{up}]}\mat{F}_k^\top + \mat{Q}_k)\mat{H}_k^{(1:N)\top} \cdot \\
+    &\quad\bigl(\mat{H}_k^{(1:N)}(\mat{F}_k\mat{P}_{k-1}^{[\mathsf{up}]}\mat{F}_k^\top + \mat{Q}_k)\mat{H}_k^{(1:N)\top} \\
+    &\quad+ \mat{R}_k^{(1:N)} + \mat{S}^{(N)}\bigr)^{-1}\mat{H}_k^{(1:N)}\Bigr)\cdot\\
+    &\Bigl(\mat{F}_k\mat{P}_{k-1}^{[\mathsf{up}]}\mat{F}_k^\top + \mat{Q}_k\Bigr)\,,
+ \end{split}
 \end{equation}
-we can compute a lower-bound for all possible covariances when letting $\mat{P}_0 = \mat{0}$.
+when $\mat{P}_0^{[\mathsf{up}]}=\mat{0}$. Similarly, the same can be done for an estimator $\mathsf{e}^{[p,p]}$ with access to measurements $\vec{y}_k^{[\mathsf{p}]}$,
+\begin{equation}\label{eqn:pp_lower_bound_covariance}
+  \begin{split}
+    \mat{P}_k^{[\mathsf{p}]} =& \Bigl( \mat{I} - (\mat{F}_k\mat{P}_{k-1}^{[\mathsf{p}]}\mat{F}_k^\top + \mat{Q}_k)\mat{H}_k^{(1:p)\top} \cdot \\
+    &\quad\bigl(\mat{H}_k^{(1:p)}(\mat{F}_k\mat{P}_{k-1}^{[\mathsf{p}]}\mat{F}_k^\top + \mat{Q}_k)\mat{H}_k^{(1:p)\top} \\
+    &\quad+ \mat{R}_k^{(1:p)}\bigr)^{-1}\mat{H}_k^{(1:p)}\Bigr)\cdot\\
+    &\Bigl(\mat{F}_k\mat{P}_{k-1}^{[\mathsf{p}]}\mat{F}_k^\top + \mat{Q}_k\Bigr)
+  \end{split}
+\end{equation}
+and $\mat{P}_0^{[\mathsf{p}]}=\mat{0}$. The bounds \eqref{eqn:0N_lower_bound_covariance} and \eqref{eqn:pp_lower_bound_covariance} are constructed such that at every timestep $k$,
+\begin{equation}
+  \mat{P}_k^{[\mathsf{up}]} \preceq \mathsf{Cov}\left[\mathcal{A}\left(k,\mathcal{M}_S,\mathcal{M}_M,\vec{y}_1^{[\mathsf{up}]},\dots,\vec{y}_k^{[\mathsf{up}]}\right) - \vec{x}_k\right]
+\end{equation}
+and
+\begin{equation}
+  \mat{P}_k^{[\mathsf{p}]} \preceq \mathsf{Cov}\left[\mathcal{A}\left(k,\mathcal{M}_S,\mathcal{M}_M,\vec{y}_1^{[\mathsf{p}]},\dots,\vec{y}_k^{[\mathsf{p}]}\right) - \vec{x}_k\right]
+\end{equation}
+hold. Therefore, taking their difference,
+\begin{equation}
+  \mat{D}_k = \mat{P}_k^{[\mathsf{up}]} - \mat{P}_k^{[\mathsf{p}]}\,,
+\end{equation}
+gives a series such that for any PPT estimator $\mathsf{e}^{[0,N]}$, bounded in error by \eqref{eqn:0N_lower_bound_covariance}, an equivalent PPT estimator of privielge $p$, $\mathsf{e}^{[p,p]}$, can be created such that the difference between their error covariances at time $k$ is at least $\mat{D}_k$. Here, the PPT requirement is used to guarantee the indistinguishabilty of the pseudorandom streams to truly random ones. The existence of an estimator of the form $\mathsf{e}^{[0,N]}$ where this cannot be done, implies the existence of an estimator with error covariance smaller than the KF for linear models. As no such estimator exists, we conclude that the $\mathsf{Setup}$ and $\mathsf{Noise}$ algorithms above meet \textit{$\{\mat{D}_1,\mat{D}_2,\dots\}$-Covariance Privilege for System Model \eqref{eqn:system_model} and Stacked Measurement Models \eqref{eqn:measurement_models}}.
 
-\begin{itemize}
-  %\item If we assume an unprivileged estimator can access all $n$ sensors, then their stacked estimation model can be described by the appropriate equation at each timestep $k$. 
-  \item We can then write the combined Kalman predict and update equation as the equation with params from the previous one.
-  \item Due to the KF preserving error covariance order, by setting $P_0=0$ we get a series of covariance such that no unprivileged estimator can estimate with error covariances less than or equal to the series (lower-bound).
-  \item Similarly we can do the same for an estimator to which we want to lower-bound the estimation difference with the unprivileged estimator. 
-  \item A privileged estimator of privilege $j$ (access to the first $j$ keys) and that can only access the first $j$ sensors, has the appropriate measurement equation. Similarly, setting the initial covariance to zero gives the lower bound series on the best possible estimation error achievable by the privileged estimator using only the measurements from the sensors to which it holds keys.
-  \item Taking the difference of the two estimator bounding series' produces the difference series.
-  \item In the context of cryptographic privileged estimation scheme, the Setup and Noise algorithms are given accordingly. The optimality of the KF can then be used to achieve the security notion.
-  \item In the above, we assume the unprivileged estimator has access to all $n$ sensors, while the $j$ privilege estimator has access to only the first $j$ sensors. In the case when the unprivileged estimator has access to fewer sensors or the privileged one to more, their difference in estimation can only increase, thus keeping the computed lower-bound a lower-bound and the cryptographic guarantee does not change (albeit the definitions of Setup and Noise will, to capture the now available sets of measurements).
-\end{itemize}
+In the above, we give a bound on the estimation difference between estimators of the form $\mathsf{e}^{[0,N]}$ and $\mathsf{e}^{[p,p]}$. In the case where the unprivileged estimator has access to fewer than $N$ measurements, $\mathsf{e}^{[0,q]}$, $q<N$, or a privileged one to more, $\mathsf{e}^{[p,q]}$, $q>p$, the difference between their error covariance bounds can only increase (since fewer measurements increase error covariance and vice versa), thus keeping the computed lower bound valid for these estimators as well.
 
 % 
 %  ######     ###    ##     ## ########    ##    ## ######## ##    ##  ######  
@@ -519,6 +547,9 @@ we can compute a lower-bound for all possible covariances when letting $\mat{P}_
 % 
 
 \subsection{Same Keys Upper Bound}\label{subsec:crypto_same_keys_upper_bound}
+
+
+
 \begin{itemize}
   \item We can use a similar approach to separately guarantee the largest possible benefit in estimation available to an estimator of privilege $j$ (access to first $j$ keys) when fusing measurements from sensors to which they do not hold keys to get a better state estimate.
   \item We can again write stacked estimation models for the two estimators. The estimator of privilege $j$ with access to the first $j$ measurements still follows the model (given in the previous subsection).
