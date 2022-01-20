@@ -603,12 +603,64 @@ Here, $\mat{D}_{\mathsf{skub},k}$ is negative definite for all $k>0$ and lower b
 % 
 
 \section{Simulation}\label{sec:sim}
-In addition to showing the estimation degradation and gain bounds, we have simulated optimal estimators to demonstrate the effects of the correlated and uncorrelated components, $\mat{Z}$ and $\mat{Y}$, respectively, on the introduced differences in estimation performance.
+In addition to showing the estimation degradation and gain bounds, we have simulated optimal estimators to demonstrate the effects of the correlated and uncorrelated components, $\mat{Z}$ and $\mat{Y}$, respectively. Simulations were implemented in the Python programming language and a constant velocity system with location measurements was used, given by parameters
+\begin{equation}
+  \mat{F}_k=
+  \begin{bmatrix}
+     1 & 0.5 & 0 & 0\\
+     0 & 1 & 0 & 0\\
+     0 & 0 & 1 & 0.5\\
+     0 & 0 & 0 & 1
+  \end{bmatrix}\,,
+\end{equation}
+\begin{equation}
+  \mat{Q}_k=10^{-3}\cdot
+  \begin{bmatrix}
+     0.42 & 1.25 & 0 & 0\\
+     1.25 & 5 & 0 & 0\\
+     0 & 0 & 0.42 & 1.25\\
+     0 & 0 & 1.25 & 5
+  \end{bmatrix}\,,
+\end{equation}
+\begin{equation}
+  \mat{H}_{k,i}=
+  \begin{bmatrix}
+     1 & 0 & 0 & 0\\
+     0 & 0 & 1 & 0
+  \end{bmatrix}
+  \text{ and }
+  \mat{R}_{k,i}=
+  \begin{bmatrix}
+     5 & 2\\
+     2 & 5
+  \end{bmatrix}\,,
+\end{equation}
+for all $k$ and sensors $i$, $1\leq i \leq N=4$. The considered correlated and uncorrelated parameters were restricted to the forms $\mat{Z}=\Sigma_z\cdot\mat{I}$ and $\mat{Y}=\Sigma_y\cdot\mat{I}$ for simplicity and all estimators execute a linear Kalman filter with the parameters above and exact knowledge of the initial state ($\mat{P}_0=\mat{0}$).
+
+Figure \ref{fig:mse_params}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics{figures/mse_params.pdf}
+  \caption{Asdf.}
+  \label{fig:mse_params}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics{figures/mse_privs.pdf}
+  \caption{Asdf.}
+  \label{fig:mse_privs}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics{figures/trace_params.pdf}
+  \caption{Asdf.}
+  \label{fig:trace_params}
+\end{figure}
 
 \begin{itemize}
-  \item In addition to showing how to derive the bounds to the benefits of using unprivileged measurements, we have simulated concrete scenarios to demonstrate the methods.
-  \item We consider the following linear system, and linear measurement models for $4$ sensors. Correlated and uncorrelated noise covariances are of the form $Y=\sigma_y I$ and $Z = \sigma_z I$.
-  \item Implementation details.
   \item First figure shows $4$ plots. Each plot shows three traces. The traces are the trace of the unprivileged estimator (no keys, all measurements), the trace of a privilege $j$ estimator ($j$ measurements) and the trace of a fusing privilege $j$ estimators (all measurements). $j$ is equal to $1,2,3$ and $4$ for each plot, respectively. Here, the difference between the first two traces in figure $4$ and the second two traces in figure $1$ is equal to the traces of the two $D_k$ series from the cryptography section, respectively. Values for $\sigma_y$, $\sigma_z$ are fixed.
   \item The second figure focuses on a single plot from the first figure but varies $\sigma_y$ and $\sigma_z$. Again, $4$ plots are shown, with $\sigma_y$ increased in two and $\sigma_z$ increased in two, such that they are both increased in only one plot. This will show that while both parameters affect the estimation of unprivileged and additional fusion estimators, $\sigma_y$ and therefore $Y$ predominantly affects the unprivileged estimator and $\sigma_z$, $Z$, affects the additional fusion estimator.
 \end{itemize}
