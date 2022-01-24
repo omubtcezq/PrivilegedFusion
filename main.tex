@@ -496,7 +496,7 @@ To give sketch proofs of the cryptographic guarantees provided by the presented 
 % 
 
 \subsection{Different Keys Lower Bound}\label{subsec:crypto_different_keys_lower_bound}
-First, we consider the lower bound to the degradation in estimation performance an estimator $\mathsf{e}^{[0,N]}$ has on all estimators $\mathsf{e}^{[p,p]}$. Since the observed measurement models for these estimators, \eqref{eqn:0q_obs_measurement_model} and \eqref{eqn:pp_obs_measurement_model}, interpret available measurements as a single stacked measurement, and since we do not consider estimators that corrupt sensors, we can treat the stacked measurement as coming from a single sensor and use the notion of covariance privilege in definition \ref{def:cov_priv_security_notion} to guarantee the bound. The associated privileged estimation scheme for the \textit{different keys lower bound} can be written for each privilege $p$ as
+First, we consider the lower bound to the degradation in estimation performance an estimator $\mathsf{e}^{[0,N]}$ has on all estimators $\mathsf{e}^{[p,p]}$. Since the observed measurement models for these estimators, \eqref{eqn:0q_obs_measurement_model} and \eqref{eqn:pp_obs_measurement_model}, interpret available measurements as a single stacked measurement, and since we do not consider estimators that corrupt sensors, we can treat the stacked measurement as coming from a single sensor and use the notion of covariance privilege in definition \ref{def:cov_priv_security_notion} to guarantee the bound. The associated privileged estimation scheme for the \textit{different keys lower bound} (DKLB) can be written for each privilege $p$ as
 \begin{LaTeXdescription}
   \item[$\mathsf{Setup}$] Given the system model \eqref{eqn:system_model}, all measurements models \eqref{eqn:measurement_models} (interpretable as a single stacked measurement model) and a security parameter $\kappa$ used by all sensors, generate $N$ stream cipher keys $\mathsf{sk_i}$, $1\leq i \leq N$, and let the secret key $\mathsf{sk}$ include all $N$ keys. Generate the correlated and uncorrelated noise terms, $\mat{Z}$ and $\mat{Y}$, and an initial estimate and error covariance, $\hat{\vec{x}}_0$ and $\mat{P}_0$, and include these in the public parameters $\mathsf{pub}$.
   
@@ -553,7 +553,7 @@ In the above, we lower bound the estimation degradation an estimator $\mathsf{e}
 % 
 
 \subsection{Same Keys Upper Bound}\label{subsec:crypto_same_keys_upper_bound}
-Similar to the lower bound above, we can use the same properties of the KF to give an upper bound to the estimation gain an estimator $\mathsf{e}^{[p,N]}$ has on all estimators $\mathsf{e}^{[p,p]}$. The associated privileged estimation scheme for the \textit{same keys upper bound} for each privilege $p$ is given by the same $\mathsf{Setup}$ algorithm as in section \ref{subsec:crypto_different_keys_lower_bound} and
+Similar to the lower bound above, we can use the same properties of the KF to give an upper bound to the estimation gain an estimator $\mathsf{e}^{[p,N]}$ has on all estimators $\mathsf{e}^{[p,p]}$. The associated privileged estimation scheme for the \textit{same keys upper bound} (SKUB) for each privilege $p$ is given by the same $\mathsf{Setup}$ algorithm as in section \ref{subsec:crypto_different_keys_lower_bound} and
 \begin{LaTeXdescription}
   \item[$\mathsf{Noise}_{\mathsf{skub}}$] Given parameters, cipher keys, timestep $k$ and true sensor measurements $\vec{y}_k^{(1:N)}$, let $\vec{y}_k^{[\mathsf{up}]}=\vec{y}_k^{[p,N]}$ following \eqref{eqn:pq_obs_measurement_model} and $\vec{y}_k^{[\mathsf{p}]}=\vec{y}_k^{[p,p]}$ following \eqref{eqn:pp_obs_measurement_model}.
 \end{LaTeXdescription}
@@ -637,21 +637,25 @@ In addition to showing the estimation degradation and gain bounds, we have simul
 \end{equation}
 for all $k$ and sensors $i$, $1\leq i \leq N=4$. The considered correlated and uncorrelated parameters were restricted to the forms $\mat{Z}=\Sigma_z\cdot\mat{I}$ and $\mat{Y}=\Sigma_y\cdot\mat{I}$ for simplicity and all estimators execute a linear Kalman filter with the parameters above and exact knowledge of the initial state ($\mat{P}_0=\mat{0}$).
 
-Figure \ref{fig:mse_privs} shows the errors for different privilege estimators when pseudorandom noise parameters, $\Sigma_z$ and $\Sigma_y$, are held constant. As would be expected, error decreases when more keys are available to estimators while a further decrease is achieved by fusing additional unprivileged estimates. Here, the differences in average error between $\mathsf{e}^{[0,4]}$ and $\mathsf{e}^{[p,p]}$, and $\mathsf{e}^{[p,p]}$ and $\mathsf{e}^{[p,4]}$, can be guaranteed cryptographically by computing the bounds in section \ref{sec:crypto} for each privilege $p$ given the values $\Sigma_z=2$ and $\Sigma_y=10$.
+Figure \ref{fig:mse_privs} shows the errors for different privilege estimators when pseudorandom noise parameters, $\Sigma_z$ and $\Sigma_y$, are held constant. As would be expected, error decreases when more keys are available to estimators while a further decrease is achieved by fusing additional unprivileged measurements. Here, the trace of the DKLB series and the SKUB series cryptographically guarantee the differences in error, on average, between $\mathsf{e}^{[0,4]}$ and $\mathsf{e}^{[p,p]}$, and $\mathsf{e}^{[p,p]}$ and $\mathsf{e}^{[p,4]}$, respectively, by computing the bounds in section \ref{sec:crypto} for each privilege $p$ given the values $\Sigma_z=2$ and $\Sigma_y=10$.
 \begin{figure}[htbp]
   \centering
   \includegraphics{figures/mse_privs.pdf}
   \caption{Average error of $1000$ simulation runs for different estimators when $\Sigma_z=2$ and $\Sigma_y=10$.}
   \label{fig:mse_privs}
 \end{figure}
-To demonstrate the effect of choosing parameters $\Sigma_z$ and $\Sigma_y$ (and therefore $\mat{Z}$ and $\mat{Y}$), figure \ref{fig:mse_params} considers shows how average error is affected when considering only a fixed privilege $p=2$. Here, it can be seen that $\Sigma_z$ has a larger effect on the difference between $\mathsf{e}^{[0,4]}$ and $\mathsf{e}^{[p,p]}$ than $\mathsf{e}^{[p,p]}$ and $\mathsf{e}^{[p,4]}$ while $\Sigma_y$ has the opposite. However, it can also be observed that both parameters affect both differences to a degree, revealing some the limitations of the proposed scheme.
+To demonstrate the effect of parameters $\Sigma_z$ and $\Sigma_y$ (and therefore $\mat{Z}$ and $\mat{Y}$), figure \ref{fig:mse_params} shows their effect on the average error of the same estimators. It can be seen that $\Sigma_z$ has a larger effect on the DKLB while $\Sigma_y$ has a larger effect on the SKUB. However, it can also be observed that both parameters affect both bounds to a degree, revealing some of the limitations of the proposed scheme.
 \begin{figure}[htbp]
   \centering
   \includegraphics{figures/mse_params.pdf}
-  \caption{Average error of $1000$ simulation runs for varying $\Sigma_z$ and $\Sigma_y$.}
+  \caption{Average error of $1000$ simulation runs of unprivileged and privilege-$2$ estimators for varying $\Sigma_z$ and $\Sigma_y$.}
   \label{fig:mse_params}
 \end{figure}
-Figure \ref{fig:trace_params}
+Figure \ref{fig:trace_params} further captures this relation between the bounds and parameters $\Sigma_z$ and $\Sigma_y$. As the simulated system is asymptotically stable, steady state error covariances are reached. Traces of these covariances let us see the change in the steady state traces of the DKLB series(difference between blue and orange lines) and the SKUB series (difference between green and orange lines) when the parameters are changed. The larger effect of $\Sigma_z$ on the DKLB than $\Sigma_y$ can be clearly seen (steeper blue line when varying $\Sigma_z$), 
+
+while the effects on the SKUB differ in that 
+
+rate at which asymptotic 
 
 
 
@@ -659,14 +663,11 @@ Figure \ref{fig:trace_params}
 \begin{figure}[htbp]
   \centering
   \includegraphics{figures/trace_params.pdf}
-  \caption{Steady state trace of estiators when .}
+  \caption{Steady state trace of estiator error covariances for privileges $1$ and $2$ when $\Sigma_z$ and $\Sigma_y$ are varied.}
   \label{fig:trace_params}
 \end{figure}
 
-\begin{itemize}
-  \item First figure shows $4$ plots. Each plot shows three traces. The traces are the trace of the unprivileged estimator (no keys, all measurements), the trace of a privilege $j$ estimator ($j$ measurements) and the trace of a fusing privilege $j$ estimators (all measurements). $j$ is equal to $1,2,3$ and $4$ for each plot, respectively. Here, the difference between the first two traces in figure $4$ and the second two traces in figure $1$ is equal to the traces of the two $D_k$ series from the cryptography section, respectively. Values for $\sigma_y$, $\sigma_z$ are fixed.
-  \item The second figure focuses on a single plot from the first figure but varies $\sigma_y$ and $\sigma_z$. Again, $4$ plots are shown, with $\sigma_y$ increased in two and $\sigma_z$ increased in two, such that they are both increased in only one plot. This will show that while both parameters affect the estimation of unprivileged and additional fusion estimators, $\sigma_y$ and therefore $Y$ predominantly affects the unprivileged estimator and $\sigma_z$, $Z$, affects the additional fusion estimator.
-\end{itemize}
+The relation between the correlated and uncorrelated components $\mat{Z}$ and $\mat{Y}$ mean that care must be taken when choosing the parameters to provide desired bounds between estimators
 
 % 
 %  .d8888b.   .d88888b.  888b    888  .d8888b.  
