@@ -637,26 +637,29 @@ In addition to showing the estimation degradation and gain bounds, we have simul
 \end{equation}
 for all $k$ and sensors $i$, $1\leq i \leq N=4$. The considered correlated and uncorrelated parameters were restricted to the forms $\mat{Z}=\Sigma_z\cdot\mat{I}$ and $\mat{Y}=\Sigma_y\cdot\mat{I}$ for simplicity and all estimators execute a linear Kalman filter with the parameters above and exact knowledge of the initial state ($\mat{P}_0=\mat{0}$).
 
-Figure \ref{fig:mse_params}
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics{figures/mse_params.pdf}
-  \caption{Asdf.}
-  \label{fig:mse_params}
-\end{figure}
-
+Figure \ref{fig:mse_privs} shows the errors for different privilege estimators when pseudorandom noise parameters, $\Sigma_z$ and $\Sigma_y$, are held constant. As would be expected, error decreases when more keys are available to estimators while a further decrease is achieved by fusing additional unprivileged estimates. Here, the differences in average error between $\mathsf{e}^{[0,4]}$ and $\mathsf{e}^{[p,p]}$, and $\mathsf{e}^{[p,p]}$ and $\mathsf{e}^{[p,4]}$, can be guaranteed cryptographically by computing the bounds in section \ref{sec:crypto} for each privilege $p$ given the values $\Sigma_z=2$ and $\Sigma_y=10$.
 \begin{figure}[htbp]
   \centering
   \includegraphics{figures/mse_privs.pdf}
-  \caption{Asdf.}
+  \caption{Average error of $1000$ simulation runs for different estimators when $\Sigma_z=2$ and $\Sigma_y=10$.}
   \label{fig:mse_privs}
 \end{figure}
+To demonstrate the effect of choosing parameters $\Sigma_z$ and $\Sigma_y$ (and therefore $\mat{Z}$ and $\mat{Y}$), figure \ref{fig:mse_params} considers shows how average error is affected when considering only a fixed privilege $p=2$. Here, it can be seen that $\Sigma_z$ has a larger effect on the difference between $\mathsf{e}^{[0,4]}$ and $\mathsf{e}^{[p,p]}$ than $\mathsf{e}^{[p,p]}$ and $\mathsf{e}^{[p,4]}$ while $\Sigma_y$ has the opposite. However, it can also be observed that both parameters affect both differences to a degree, revealing some the limitations of the proposed scheme.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics{figures/mse_params.pdf}
+  \caption{Average error of $1000$ simulation runs for varying $\Sigma_z$ and $\Sigma_y$.}
+  \label{fig:mse_params}
+\end{figure}
+Figure \ref{fig:trace_params}
+
+
+
 
 \begin{figure}[htbp]
   \centering
   \includegraphics{figures/trace_params.pdf}
-  \caption{Asdf.}
+  \caption{Steady state trace of estiators when .}
   \label{fig:trace_params}
 \end{figure}
 
