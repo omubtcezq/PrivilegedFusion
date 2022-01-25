@@ -637,7 +637,7 @@ In addition to showing the estimation degradation and gain bounds, we have simul
 \end{equation}
 for all $k$ and sensors $i$, $1\leq i \leq N=4$. The considered correlated and uncorrelated parameters were restricted to the forms $\mat{Z}=\Sigma_z\cdot\mat{I}$ and $\mat{Y}=\Sigma_y\cdot\mat{I}$ for simplicity and all estimators execute a linear Kalman filter with the parameters above and exact knowledge of the initial state ($\mat{P}_0=\mat{0}$).
 
-Figure \ref{fig:mse_privs} shows the errors for different privilege estimators when pseudorandom noise parameters, $\Sigma_z$ and $\Sigma_y$, are held constant. As would be expected, error decreases when more keys are available to estimators while a further decrease is achieved by fusing additional unprivileged measurements. Here, the trace of the DKLB series and the SKUB series cryptographically guarantee the differences in error, on average, between $\mathsf{e}^{[0,4]}$ and $\mathsf{e}^{[p,p]}$, and $\mathsf{e}^{[p,p]}$ and $\mathsf{e}^{[p,4]}$, respectively, by computing the bounds in section \ref{sec:crypto} for each privilege $p$ given the values $\Sigma_z=2$ and $\Sigma_y=10$.
+Figure \ref{fig:mse_privs} shows the errors for different privilege estimators when pseudorandom noise parameters, $\Sigma_z$ and $\Sigma_y$, are held constant. As would be expected, error decreases when more keys are available to estimators while a further decrease is achieved as more additional unprivileged measurements are fused. Here, the trace of the DKLB series and the SKUB series cryptographically guarantee the differences in error, on average, between $\mathsf{e}^{[0,4]}$ and $\mathsf{e}^{[p,p]}$, and $\mathsf{e}^{[p,p]}$ and $\mathsf{e}^{[p,4]}$, respectively, by computing the bounds in section \ref{sec:crypto} for each privilege $p$ given the values $\Sigma_z=2$ and $\Sigma_y=10$.
 \begin{figure}[htbp]
   \centering
   \includegraphics{figures/mse_privs.pdf}
@@ -651,23 +651,15 @@ To demonstrate the effect of parameters $\Sigma_z$ and $\Sigma_y$ (and therefore
   \caption{Average error of $1000$ simulation runs of unprivileged and privilege-$2$ estimators for varying $\Sigma_z$ and $\Sigma_y$.}
   \label{fig:mse_params}
 \end{figure}
-Figure \ref{fig:trace_params} further captures this relation between the bounds and parameters $\Sigma_z$ and $\Sigma_y$. As the simulated system is asymptotically stable, steady state error covariances are reached. Traces of these covariances let us see the change in the steady state traces of the DKLB series(difference between blue and orange lines) and the SKUB series (difference between green and orange lines) when the parameters are changed. The larger effect of $\Sigma_z$ on the DKLB than $\Sigma_y$ can be clearly seen (steeper blue line when varying $\Sigma_z$), 
+Figure \ref{fig:trace_params} further captures this relation between the bounds and parameters $\Sigma_z$ and $\Sigma_y$. As the simulated system is asymptotically stable, steady state error covariances are reached, and therefore the DKLB and SKUB stabilise as well. From the plots we can see that increasing the fully correlated noise parameter $\Sigma_z$ cannot greatly reduce the SKUB, as estimators knowing any keys can estimate this noise better than any uncorrelated noise also affecting the fusion of additional unprivileged measurements. Simultaneously, adding correlated noise where it cannot be removed means unprivileged estimators are strongly affected by the noise, increasing the DKLB. The effects of $\Sigma_y$ are less ideal, as uncorrelated noise still affects unprivileged estimators, increasing the DKLB. However, it can be seen that increasing $\Sigma_y$ can reduce the SKUB to near $\mat{0}$, as enough uncorrelated noise makes fusing additional measurements hold little to no additional information.
 
-while the effects on the SKUB differ in that 
-
-rate at which asymptotic 
-
-% mention why unpriv can be better than pp
-
-
+Figure \ref{fig:trace_params} also shows how the DKLB and SKUB are affected by the privilege $p$ they are computed for. As can be expected, a higher privilege $p$ results in fewer possible unprivileged measurements to fuse resulting in a lower SKUB, while a lower one can lead to unprivileged estimators performing better than privileged ones when the added noise is small (negative DKLB when $p=1$ and $\Sigma_y=5$).
 \begin{figure}[htbp]
   \centering
   \includegraphics{figures/trace_params.pdf}
-  \caption{Steady state trace of estiator error covariances for privileges $1$ and $2$ when $\Sigma_z$ and $\Sigma_y$ are varied.}
+  \caption{Steady state traces of the DKLB and SKUB for privileges $1$ and $2$ when $\Sigma_z$ and $\Sigma_y$ are varied.}
   \label{fig:trace_params}
 \end{figure}
-
-The relation between the correlated and uncorrelated components $\mat{Z}$ and $\mat{Y}$ mean that care must be taken when choosing the parameters to provide desired bounds between estimators
 
 % 
 %  .d8888b.   .d88888b.  888b    888  .d8888b.  
@@ -684,10 +676,9 @@ The relation between the correlated and uncorrelated components $\mat{Z}$ and $\
 % 
 
 \section{Conclusion}\label{sec:conc}
-\begin{itemize}
-  \item Concluding remarks.
-  \item Future work includes exploring key subsets that do not need to be sequential, decentralised methods for multi-key correlated noise generation, and the effects and cryptographic guarantees of sensors falling out of synchronisation.
-\end{itemize}
+The presented method demonstrates how different levels of estimation performance can be cryptographically guaranteed in a network of multiple sensors. The problem considered requires sequential access to sensors and sensor keys and allows for two free parameters, $\mat{Z}$ and $\mat{Y}$, to loosely control the two relevant cryptographic bounds. The different bounds for each privilege, changing bounds over time and the relation between these parameters and the bounds themselves mean that choosing these parameters is a task-specific problem where care must be taken to meet any desired bounds without overly affecting others. Resulting cryptographic bounds can, however, always be computed exactly.
+
+Future work on this topic includes deriving free parameters that affect relevant cryptographic bounds independently, relaxing the requirements for sequential sensor and key access and exploring methods for decentralised correlated noise generation with fewer communication costs.
 
 % conference papers do not normally have an appendix
 
