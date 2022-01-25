@@ -1,64 +1,71 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%2345678901234567890123456789012345678901234567890123456789012345678901234567890
+%        1         2         3         4         5         6         7         8
 
-%% bare_conf.tex
-%% V1.4b
-%% 2015/08/26
-%% by Michael Shell
-%% See:
-%% http://www.michaelshell.org/
-%% for current contact information.
-%%
-%% This is a skeleton file demonstrating the use of IEEEtran.cls
-%% (requires IEEEtran.cls version 1.8b or later) with an IEEE
-%% conference paper.
-%%
-%% Support sites:
-%% http://www.michaelshell.org/tex/ieeetran/
-%% http://www.ctan.org/pkg/ieeetran
-%% and
-%% http://www.ieee.org/
+% Comment this line out if you need a4paper
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf}
 
-\documentclass[conference]{IEEEtran}
+% Use this line for a4 paper
+%\documentclass[a4paper, 10pt, conference]{ieeeconf}
+
+% This command is only needed if 
+% you want to use the \thanks command
+\IEEEoverridecommandlockouts
+
+% Needed to meet printer requirements.
+\overrideIEEEmargins
+
+%In case you encounter the following error:
+%Error 1010 The PDF file may be corrupt (unable to open PDF file) OR
+%Error 1000 An error occurred while parsing a contents stream. Unable to analyze the PDF file.
+%This is a known problem with pdfLaTeX conversion filter. The file cannot be opened with acrobat reader
+%Please use one of the alternatives below to circumvent this error by uncommenting one or the other
+%\pdfobjcompresslevel=0
+%\pdfminorversion=4
+
+% See the \addtolength command later in the file to balance the column lengths
+% on the last page of the document
+
+% The following packages can be found on http:\\www.ctan.org
+%\usepackage{graphics} % for pdf, bitmapped graphics files
+%\usepackage{epsfig} % for postscript graphics files
+%\usepackage{mathptmx} % assumes new font selection scheme installed
+%\usepackage{times} % assumes new font selection scheme installed
+%\usepackage{amsmath} % assumes amsmath package installed
+%\usepackage{amssymb}  % assumes amsmath package installed
 
 % Imports
 \usepackage{amsmath}
 \usepackage{amsfonts}
-\usepackage{amsthm}
+%\usepackage{amsthm} % Errors from \proof when used with this ieeeconf
 % Local
 \usepackage{local_macros/isasmathmacros}
 
 % Environments
-\theoremstyle{definition}
+%\theoremstyle{definition} % Doesn't exist when used with this ieeeconf
 \newtheorem{definition}{Definition}[section]
 \newtheorem{theorem}{Theorem}[section]
 
-\theoremstyle{remark}
-\newtheorem*{remark}{Remark}
+%\theoremstyle{remark} % Doesn't exist when used with this ieeeconf
+%\newtheorem*{remark}{Remark} % Doesn't exist when used with this ieeeconf
+\newtheorem{remark}{Remark}
 
-% correct bad hyphenation here
-\hyphenation{op-tical net-works semi-conduc-tor}
+\title{\LARGE \bf
+Privileged Estimate Fusion With Correlated Gaussian Keystreams
+}
 
+\author{Marko Ristic$^{1}$ and Benjamin Noack$^{1}$% <-this % stops a space
+\thanks{$^{1}$Marko Ristic and Benjamin Noack are with the Autonomous Multisensor Systems Group (AMS), Institute for Intelligent Cooperating Systems (ICS), Otto von Guericke University (OVGU), Magdeburg, Germany {\tt\small \{marko.ristic, benjamin.noack\}@ovgu.de}}%
+}
 
 \begin{document}
 
-% paper title
-\title{Privileged Estimate Fusion With Correlated Gaussian Keystreams}
-
-\author{\IEEEauthorblockN{Marko Ristic}
-\IEEEauthorblockA{Autonomous Multisensor Systems Group (AMS),\\
-Institute for Intelligent Cooperating Systems (ICS),\\
-Otto von Guericke University (OVGU),\\
-Magdeburg, Germany\\
-Email: marko.ristic@ovgu.de}
-\and
-\IEEEauthorblockN{Benjamin Noack}
-\IEEEauthorblockA{Autonomous Multisensor Systems Group (AMS),\\
-Institute for Intelligent Cooperating Systems (ICS),\\
-Otto von Guericke University (OVGU),\\
-Magdeburg, Germany\\
-Email: benjamin.noack@ovgu.de}}
-
-% make the title area
 \maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % 
 %        d8888 888888b.    .d8888b.  
@@ -74,14 +81,12 @@ Email: benjamin.noack@ovgu.de}}
 %                                    
 % 
 
-% As a general rule, do not put math, special symbols or citations in the abstract
 \begin{abstract}
-Providing cryptographic privacy guarantees in a distributed state estimation problem has been a growing topic of research since the ubiquity of modern public networks. One such guarantee is having different levels of estimation performance achievable by trusted and untrusted users within a sensor network. In the presence of multiple sensor measurements, guaranteeing better estimation performance by the usual means of adding removable noise to measurements is complicated by an alternative for untrusted users to improve their performance: fusing more measurements. Our novel method adds correlated noise at different sensors, restricting the performance gained from fusing additional measurements while guaranteeing better performance to those that can remove it. We extend a cryptographic framework for defining estimation privilege and use this to prove the scheme's security goals, while simulations demonstrate the effects of parameters in a concrete estimation problem. A scheme that can ensure such differences in estimation performance between types of estimators can find applications in priority-based or subscription-based performances in environments where more than one sensor is present.
-\end{abstract}
+  Providing cryptographic privacy guarantees in a distributed state estimation problem has been a growing topic of research since the ubiquity of modern public networks. One such guarantee is having different levels of estimation performance achievable by trusted and untrusted users within a sensor network. In the presence of multiple sensor measurements, guaranteeing better estimation performance by the usual means of adding removable noise to measurements is complicated by an alternative for untrusted users to improve their performance: fusing more measurements. Our novel method adds correlated noise at different sensors, restricting the performance gained from fusing additional measurements while guaranteeing better performance to those that can remove it. We extend a cryptographic framework for defining estimation privilege and use this to prove the scheme's security goals, while simulations demonstrate the effects of parameters in a concrete estimation problem. A scheme that can ensure such differences in estimation performance between types of estimators can find applications in priority-based or subscription-based performances in environments where more than one sensor is present.
+  \end{abstract}
 
-% no keywords
 
-\IEEEpeerreviewmaketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % 
 % 8888888 888b    888 88888888888 8888888b.   .d88888b.  
@@ -680,15 +685,29 @@ The presented method demonstrates how different levels of estimation performance
 
 Future work on this topic includes deriving free parameters that affect relevant cryptographic bounds independently, relaxing the requirements for sequential sensor and key access and exploring methods for decentralised correlated noise generation with fewer communication costs.
 
-% conference papers do not normally have an appendix
+% This command serves to balance the column lengths
+% on the last page of the document manually. It shortens
+% the textheight of the last page by a suitable amount.
+% This command does not take effect until the next page
+% so it should come on the page before the last. Make
+% sure that you do not shorten the textheight too much.
+\addtolength{\textheight}{-11cm}
 
-% trigger a \newpage just before the given reference
-% number - used to balance the columns on the last page
-% adjust value as needed - may need to be readjusted if
-% the document is modified later
-%\IEEEtriggeratref{8}
-% The "triggered" command can be changed if desired:
-%\IEEEtriggercmd{\enlargethispage{-5in}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\section*{APPENDIX}
+
+%\section*{ACKNOWLEDGMENT}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % 
 % 8888888b.  8888888888 8888888888 .d8888b.  
@@ -707,7 +726,4 @@ Future work on this topic includes deriving free parameters that affect relevant
 \bibliographystyle{IEEEtran}
 \bibliography{bibliography/PrivilegedFusion}
 
-% that's all folks
 \end{document}
-
-
