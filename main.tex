@@ -666,7 +666,7 @@ Figure \ref{fig:trace_params} further captures this relation between the bounds 
 % This command does not take effect until the next page
 % so it should come on the page before the last. Make
 % sure that you do not shorten the textheight too much.
-\addtolength{\textheight}{-5.41cm}
+\addtolength{\textheight}{-4cm}
 
 Figure \ref{fig:trace_params} also shows how the bounds are affected by the privilege $p$ they are computed for. Predictably, a higher privilege results in fewer additional unprivileged measurements to fuse, lowering the PGUB, but also producing better privileged estimates, increasing the PLLB. We can also see that when the fully correlated noise term $\Sigma_z$ is small and privilege is low ($p=1$), unprivileged estimators with access to all measurements can perform better than privileged ones accessing only privileged measurements (resulting in a negative $\mathsf{tr}(\mat{D}_{\mathsf{PLLB},k})$).
 \begin{figure}[htbp]
